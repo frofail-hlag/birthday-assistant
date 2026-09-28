@@ -1,139 +1,197 @@
-const notificationStatus = document.getElementById("notificationStatus");
-const notificationMessage = document.getElementById("notificationMessage");
-const enableButton = document.getElementById("enableNotifications");
-const testButton = document.getElementById("testNotification");
-const pushHint = document.getElementById("pushHint");
+const enablePushBtn = document.getElementById("enablePushBtn");
+const testLocalBtn = document.getElementById("testLocalBtn");
+const pushStatus = document.getElementById("pushStatus");
 const installHint = document.getElementById("installHint");
 
-function updateNotificationUI() {
-  if (!("Notification" in window)) {
-    notificationStatus.textContent = "Not supported";
-    notificationStatus.className = "status-pill status-off";
-    notificationMessage.textContent = "This browser does not support web notifications.";
-    enableButton.disabled = true;
-    testButton.disabled = true;
+let oneSignalReady = false;
+
+function setPushStatus(message, enabled = false) {
+  pushStatus.textContent = message;
+  pushStatus.classList.toggle("success", enabled);
+}
+
+function isStandalone() {
+  return window.matchMedia("(display-mode: standalone)").matches ||
+         window.navigator.standalone === true;
+}
+
+function updateInstallHint() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+  if (isIOS && !isStandalone()) {
+    installHint.textContent =
+      "📱 On iPhone/iPad, add Birthday Assistant to the Home Screen before enabling remote push notifications.";
+  } else {
+    installHint.textContent = "";
+  }
+}
+
+function getOneSignal() {
+  return window.birthdayAssistantOneSignal || null;
+}
+
+async function getPushSubscriptionState() {
+  const OneSignal = getOneSignal();
+
+  if (!OneSignal) {
+    return { ready: false, subscribed: false, optedIn: false };
+  }
+
+  try {
+    const subscription = OneSignal.User?.PushSubscription;
+
+    if (!subscription) {
+      return { ready: true, subscribed: false, optedIn: false };
+    }
+
+    const optedIn = typeof subscription.optedIn === "boolean"
+      ? subscription.optedIn
+      : false;
+
+    const id = subscription.id || null;
+
+    return {
+      ready: true,
+      subscribed: Boolean(id) && optedIn,
+      optedIn,
+      id
+    };
+  } catch (error) {
+    console.error("OneSignal subscription check failed:", error);
+    return { ready: true, subscribed: false, optedIn: false };
+  }
+}
+
+async function refreshPushStatus() {
+  const OneSignal = getOneSignal();
+
+  if (!OneSignal) {
+    oneSignalReady = false;
+    setPushStatus("⏳ Connecting to push service...");
     return;
   }
 
-  const permission = Notification.permission;
+  oneSignalReady = true;
 
-  if (permission === "granted") {
-    notificationStatus.textContent = "Browser enabled";
-    notificationStatus.className = "status-pill status-on";
-    notificationMessage.textContent =
-      "Browser notifications are enabled. OneSignal push setup is being checked.";
-    enableButton.disabled = true;
-    testButton.disabled = false;
-  } else if (permission === "denied") {
-    notificationStatus.textContent = "Blocked";
-    notificationStatus.className = "status-pill status-off";
-    notificationMessage.textContent =
-      "Notifications are blocked. Enable them in your browser or device settings.";
-    enableButton.disabled = true;
-    testButton.disabled = true;
+  const state = await getPushSubscriptionState();
+
+  if (state.subscribed) {
+    enablePushBtn.textContent = "✅ Push Notifications Enabled";
+    enablePushBtn.disabled = true;
+    setPushStatus("Your device is subscribed to OneSignal push notifications.", true);
+    return;
+  }
+
+  enablePushBtn.textContent = "🔔 Enable Push Notifications";
+  enablePushBtn.disabled = false;
+
+  if (Notification.permission === "denied") {
+    setPushStatus("⚠️ Notifications are blocked. Enable them in iPhone Settings for Birthday Assistant.");
+  } else if (state.optedIn) {
+    setPushStatus("⏳ Permission is allowed, but OneSignal is still registering this device. Please wait a moment and try again.");
   } else {
-    notificationStatus.textContent = "Off";
-    notificationStatus.className = "status-pill status-off";
-    notificationMessage.textContent =
-      "Enable push notifications so Birthday Assistant can alert you about upcoming birthdays.";
-    enableButton.disabled = false;
-    testButton.disabled = true;
+    setPushStatus("Push notifications are not enabled yet.");
   }
 }
 
 async function enableOneSignalPush() {
-  const OneSignal = window.birthdayAssistantOneSignal;
+  const OneSignal = getOneSignal();
 
   if (!OneSignal) {
-    pushHint.textContent =
-      "OneSignal is still loading. Please wait a moment and try again.";
+    setPushStatus("⏳ OneSignal is still loading. Please wait a few seconds and try again.");
     return;
   }
 
-  try {
-    await OneSignal.Notifications.requestPermission();
+  enablePushBtn.disabled = true;
+  setPushStatus("⏳ Requesting notification permission...");
 
-    if (OneSignal.User?.PushSubscription) {
-      await OneSignal.User.PushSubscription.optIn();
+  try {
+    const permissionGranted = await OneSignal.Notifications.requestPermission();
+
+    if (!permissionGranted) {
+      enablePushBtn.disabled = false;
+      setPushStatus("Notifications were not enabled. Please choose Allow when prompted.");
+      return;
     }
 
-    pushHint.textContent =
-      "OneSignal push is enabled on this device. 🎉";
-  } catch (error) {
-    console.error("OneSignal permission error:", error);
-    pushHint.textContent =
-      "OneSignal could not enable push notifications. Check the browser/device permission.";
-  }
+    const subscription = OneSignal.User?.PushSubscription;
 
-  updateNotificationUI();
-}
-
-async function showLocalTestNotification(title = "🎂 Birthday Assistant") {
-  if (!("Notification" in window) || Notification.permission !== "granted") {
-    return;
-  }
-
-  const options = {
-    body: "Your Birthday Assistant local notification is working!",
-    icon: "./icons/icon-192.png",
-    badge: "./icons/icon-192.png",
-    tag: "birthday-assistant-local-test",
-    data: { url: "./" }
-  };
-
-  try {
-    if ("serviceWorker" in navigator) {
-      const registration = await navigator.serviceWorker.ready;
-      await registration.showNotification(title, options);
-    } else {
-      new Notification(title, options);
+    if (subscription?.optIn) {
+      await subscription.optIn();
     }
+
+    // Give OneSignal a moment to create/update the subscription.
+    for (let attempt = 0; attempt < 8; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const state = await getPushSubscriptionState();
+
+      if (state.subscribed) {
+        enablePushBtn.textContent = "✅ Push Notifications Enabled";
+        enablePushBtn.disabled = true;
+        setPushStatus("Your device is subscribed to OneSignal push notifications.", true);
+        return;
+      }
+    }
+
+    enablePushBtn.disabled = false;
+    setPushStatus(
+      "⚠️ iOS allowed notifications, but OneSignal has not confirmed the push subscription yet. Please make sure this app is installed on the Home Screen and try again."
+    );
   } catch (error) {
-    console.error("Could not show local notification:", error);
+    console.error("OneSignal push setup failed:", error);
+    enablePushBtn.disabled = false;
+    setPushStatus("⚠️ We couldn't confirm the OneSignal subscription. Please try again.");
   }
 }
 
-async function registerServiceWorker() {
-  if (!("serviceWorker" in navigator)) {
-    console.warn("Service workers are not supported.");
+async function testLocalNotification() {
+  if (!("Notification" in window)) {
+    alert("Notifications are not supported in this browser.");
     return;
   }
 
-  try {
-    const registration = await navigator.serviceWorker.register("./sw.js");
-    console.log("PWA service worker registered:", registration.scope);
-  } catch (error) {
-    console.error("PWA service worker registration failed:", error);
+  if (Notification.permission !== "granted") {
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      alert("Notification permission was not granted.");
+      return;
+    }
+  }
+
+  if ("serviceWorker" in navigator) {
+    const registration = await navigator.serviceWorker.ready;
+
+    await registration.showNotification("🎂 Birthday Assistant", {
+      body: "This is a local notification test.",
+      icon: "icons/icon-192.png",
+      badge: "icons/icon-192.png",
+      tag: "birthday-assistant-local-test"
+    });
   }
 }
 
-function setupInstallHint() {
-  const standalone =
-    window.matchMedia("(display-mode: standalone)").matches ||
-    window.navigator.standalone === true;
+window.addEventListener("onesignal-ready", async () => {
+  await refreshPushStatus();
+});
 
-  if (standalone) {
-    installHint.textContent =
-      "Birthday Assistant is installed as an app. 🎉";
-  } else {
-    installHint.textContent =
-      "On iPhone/iPad, use Share → Add to Home Screen to install the app.";
-  }
+enablePushBtn.addEventListener("click", enableOneSignalPush);
+testLocalBtn.addEventListener("click", testLocalNotification);
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js")
+      .then(() => console.log("Birthday Assistant service worker registered."))
+      .catch(error => console.error("Service worker registration failed:", error));
+  });
 }
 
-window.addEventListener("onesignal-ready", () => {
-  pushHint.textContent =
-    "OneSignal is connected. Tap Enable Push Notifications to subscribe this device.";
-});
+updateInstallHint();
 
-enableButton.addEventListener("click", enableOneSignalPush);
-
-testButton.addEventListener("click", () => {
-  showLocalTestNotification();
-});
-
-window.addEventListener("load", async () => {
-  await registerServiceWorker();
-  setupInstallHint();
-  updateNotificationUI();
-});
+if (getOneSignal()) {
+  refreshPushStatus();
+} else {
+  setPushStatus("⏳ Connecting to push service...");
+  // In case OneSignal initializes very shortly after this script executes.
+  setTimeout(refreshPushStatus, 2000);
+}
