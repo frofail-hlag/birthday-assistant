@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <title>Birthday Assistant</title>
+
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      try {
+        await OneSignal.init({
+          appId: "eafe14ef-fde2-4de8-880f-686a9a28d54e",
+          serviceWorkerPath: "onesignal/OneSignalSDKWorker.js",
+          serviceWorkerParam: {
+            scope: "/birthday-assistant/onesignal/"
+          }
+        });
+
+        window.birthdayAssistantOneSignal = OneSignal;
+        window.dispatchEvent(new Event("onesignal-ready"));
+      } catch (error) {
+        console.error("OneSignal initialization failed:", error);
+        window.birthdayAssistantOneSignalError = error;
+        window.dispatchEvent(new Event("onesignal-error"));
+      }
+    });
+  </script>
+</head>
+
+<body>
+  <main class="container">
+    <section class="card">
+      <div class="emoji">🎂</div>
+      <h1>Birthday Assistant</h1>
+      <p class="subtitle">Never forget an important birthday.</p>
+
+      <button id="enablePushBtn" class="primary">
+        🔔 Enable Push Notifications
+      </button>
+
+      <p id="pushStatus" class="status">
+        ⏳ Connecting to push service...
+      </p>
+
+      <button id="testLocalBtn" class="secondary">
+        🧪 Test Local Notification
+      </button>
+
+      <div id="installHint" class="hint"></div>
+
+      <hr>
+
+      <h2>🎁 Birthday Cards</h2>
+      <p class="muted">
+        Personalized birthday cards are coming soon.
+      </p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
