@@ -1,39 +1,15 @@
-* {
-  box-sizing: border-box;
-}
-
+* { box-sizing: border-box; }
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: #f4f7fa;
   color: #0b1f33;
 }
-
-.app {
-  max-width: 620px;
-  margin: 0 auto;
-  padding: 24px 18px 40px;
-}
-
-.hero {
-  text-align: center;
-  padding: 18px 10px 24px;
-}
-
-.cake {
-  font-size: 52px;
-}
-
-h1 {
-  margin: 8px 0;
-  font-size: 30px;
-}
-
-.hero p {
-  margin: 0;
-  color: #5d6b78;
-}
-
+.app { max-width: 680px; margin: 0 auto; padding: 24px 18px 40px; }
+.hero { text-align: center; padding: 18px 10px 24px; }
+.cake { font-size: 52px; }
+h1 { margin: 8px 0; font-size: 30px; }
+.hero p { margin: 0; color: #5d6b78; }
 .card {
   background: white;
   border-radius: 18px;
@@ -41,17 +17,8 @@ h1 {
   margin: 14px 0;
   box-shadow: 0 6px 20px rgba(11, 31, 51, 0.08);
 }
-
-.card h2 {
-  margin-top: 0;
-  font-size: 20px;
-}
-
-.card p {
-  color: #5d6b78;
-  line-height: 1.5;
-}
-
+.card h2 { margin-top: 0; font-size: 20px; }
+.card p { color: #5d6b78; line-height: 1.5; }
 button {
   width: 100%;
   border: 0;
@@ -64,13 +31,31 @@ button {
   background: #0b1f33;
   color: white;
 }
-
-button.secondary {
-  background: #e9eef3;
-  color: #0b1f33;
+button.secondary { background: #e9eef3; color: #0b1f33; }
+button:disabled { opacity: 0.55; cursor: default; }
+.diagnostics { font-size: 14px; }
+.diag-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 0;
+  border-bottom: 1px solid #edf1f4;
 }
-
-button:disabled {
-  opacity: 0.55;
-  cursor: default;
+.diag-row span { color: #5d6b78; }
+.diag-row strong {
+  text-align: right;
+  overflow-wrap: anywhere;
+  max-width: 58%;
+}
+#diagLog {
+  margin: 14px 0 0;
+  padding: 12px;
+  background: #0b1f33;
+  color: #dce7ef;
+  border-radius: 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 260px;
+  overflow: auto;
+  font-size: 11px;
 }

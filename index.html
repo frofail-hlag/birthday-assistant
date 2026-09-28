@@ -11,8 +11,6 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="style.css">
   <title>Birthday Assistant</title>
-
-  <!-- OneSignal Web SDK v16 -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 </head>
 <body>
@@ -30,6 +28,19 @@
       <button id="testLocal" class="secondary">🧪 Test Local Notification</button>
     </section>
 
+    <section class="card diagnostics">
+      <h2>🛠️ Diagnostics</h2>
+      <div class="diag-row"><span>OneSignal SDK</span><strong id="diagSdk">Checking...</strong></div>
+      <div class="diag-row"><span>Push supported</span><strong id="diagSupport">Checking...</strong></div>
+      <div class="diag-row"><span>Native permission</span><strong id="diagPermission">Checking...</strong></div>
+      <div class="diag-row"><span>Opted in</span><strong id="diagOptedIn">Checking...</strong></div>
+      <div class="diag-row"><span>Subscription ID</span><strong id="diagSubId">Checking...</strong></div>
+      <div class="diag-row"><span>Push token</span><strong id="diagToken">Checking...</strong></div>
+      <div class="diag-row"><span>PWA service worker</span><strong id="diagPwaSw">Checking...</strong></div>
+      <div class="diag-row"><span>OneSignal worker</span><strong id="diagOsSw">Checking...</strong></div>
+      <pre id="diagLog">Waiting for OneSignal...</pre>
+    </section>
+
     <section class="card">
       <h2>🎁 Birthday Cards</h2>
       <p>Personalized birthday cards are coming next.</p>
@@ -39,8 +50,11 @@
 
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
+
     OneSignalDeferred.push(async function(OneSignal) {
       try {
+        OneSignal.Debug.setLogLevel("trace");
+
         await OneSignal.init({
           appId: "eafe14ef-fde2-4de8-880f-686a9a28d54e",
           serviceWorkerPath: "onesignal/OneSignalSDKWorker.js",
@@ -49,9 +63,11 @@
           }
         });
 
+        window.__oneSignal = OneSignal;
         window.dispatchEvent(new Event("onesignal-ready"));
       } catch (error) {
         console.error("OneSignal initialization failed:", error);
+        window.__oneSignalInitError = error;
         window.dispatchEvent(new CustomEvent("onesignal-error", { detail: error }));
       }
     });
