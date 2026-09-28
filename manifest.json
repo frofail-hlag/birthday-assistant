@@ -1,1 +1,21 @@
-{"name":"Birthday Assistant","short_name":"Birthday Assistant","start_url":"./","display":"standalone","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"icons/icon-192.png","sizes":"192x192","type":"image/png"},{"src":"icons/icon-512.png","sizes":"512x512","type":"image/png"}]}
+{
+  "name": "Birthday Assistant",
+  "short_name": "Birthday Assistant",
+  "start_url": "/birthday-assistant/",
+  "display": "standalone",
+  "background_color": "#f4f7fa",
+  "theme_color": "#0b1f33",
+  "description": "A personal birthday reminder assistant.",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
