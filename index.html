@@ -12,6 +12,20 @@
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
 <link rel="stylesheet" href="./style.css">
+
+<!-- OneSignal Web Push SDK -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "eafe14ef-fde2-4de8-880f-686a9a28d54e"
+    });
+    window.birthdayAssistantOneSignal = OneSignal;
+    window.dispatchEvent(new Event("onesignal-ready"));
+  });
+</script>
+
 <title>Birthday Assistant</title>
 </head>
 <body>
@@ -28,10 +42,10 @@
 </div>
 <p id="notificationMessage">Enable notifications so the Birthday Assistant can alert you when a birthday is coming up.</p>
 <div class="button-row">
-<button id="enableNotifications" class="primary-button">🔔 Enable Notifications</button>
-<button id="testNotification" class="secondary-button">🧪 Test Notification</button>
+<button id="enableNotifications" class="primary-button">🔔 Enable Push Notifications</button>
+<button id="testNotification" class="secondary-button">🧪 Test Local Notification</button>
 </div>
-<p id="installHint" class="hint"></p>
+<p id="pushHint" class="hint">Connecting to the push notification service…</p><p id="installHint" class="hint"></p>
 </section>
 
 <section class="card">
