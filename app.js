@@ -3,8 +3,6 @@ const testLocalBtn = document.getElementById("testLocalBtn");
 const pushStatus = document.getElementById("pushStatus");
 const installHint = document.getElementById("installHint");
 
-let oneSignalReady = false;
-
 function setPushStatus(message, enabled = false) {
   pushStatus.textContent = message;
   pushStatus.classList.toggle("success", enabled);
@@ -34,31 +32,28 @@ async function getPushSubscriptionState() {
   const OneSignal = getOneSignal();
 
   if (!OneSignal) {
-    return { ready: false, subscribed: false, optedIn: false };
+    return { ready: false, optedIn: false, id: null };
   }
 
   try {
     const subscription = OneSignal.User?.PushSubscription;
 
     if (!subscription) {
-      return { ready: true, subscribed: false, optedIn: false };
+      return { ready: true, optedIn: false, id: null };
     }
 
-    const optedIn = typeof subscription.optedIn === "boolean"
-      ? subscription.optedIn
-      : false;
-
+    // v16 exposes these values directly.
+    const optedIn = Boolean(subscription.optedIn);
     const id = subscription.id || null;
 
     return {
       ready: true,
-      subscribed: Boolean(id) && optedIn,
       optedIn,
       id
     };
   } catch (error) {
     console.error("OneSignal subscription check failed:", error);
-    return { ready: true, subscribed: false, optedIn: false };
+    return { ready: true, optedIn: false, id: null };
   }
 }
 
@@ -66,16 +61,14 @@ async function refreshPushStatus() {
   const OneSignal = getOneSignal();
 
   if (!OneSignal) {
-    oneSignalReady = false;
-    setPushStatus("⏳ Connecting to push service...");
+    setPushStatus("⚠️ OneSignal could not be initialized. Please refresh the app.");
+    enablePushBtn.disabled = false;
     return;
   }
 
-  oneSignalReady = true;
-
   const state = await getPushSubscriptionState();
 
-  if (state.subscribed) {
+  if (state.optedIn && state.id) {
     enablePushBtn.textContent = "✅ Push Notifications Enabled";
     enablePushBtn.disabled = true;
     setPushStatus("Your device is subscribed to OneSignal push notifications.", true);
@@ -88,7 +81,7 @@ async function refreshPushStatus() {
   if (Notification.permission === "denied") {
     setPushStatus("⚠️ Notifications are blocked. Enable them in iPhone Settings for Birthday Assistant.");
   } else if (state.optedIn) {
-    setPushStatus("⏳ Permission is allowed, but OneSignal is still registering this device. Please wait a moment and try again.");
+    setPushStatus("⏳ Permission is allowed. OneSignal is still creating the device subscription...");
   } else {
     setPushStatus("Push notifications are not enabled yet.");
   }
@@ -98,7 +91,7 @@ async function enableOneSignalPush() {
   const OneSignal = getOneSignal();
 
   if (!OneSignal) {
-    setPushStatus("⏳ OneSignal is still loading. Please wait a few seconds and try again.");
+    setPushStatus("⚠️ OneSignal is not ready. Please wait a few seconds and try again.");
     return;
   }
 
@@ -120,13 +113,13 @@ async function enableOneSignalPush() {
       await subscription.optIn();
     }
 
-    // Give OneSignal a moment to create/update the subscription.
-    for (let attempt = 0; attempt < 8; attempt++) {
+    // Wait for OneSignal to create the subscription ID.
+    for (let attempt = 0; attempt < 15; attempt++) {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const state = await getPushSubscriptionState();
 
-      if (state.subscribed) {
+      if (state.optedIn && state.id) {
         enablePushBtn.textContent = "✅ Push Notifications Enabled";
         enablePushBtn.disabled = true;
         setPushStatus("Your device is subscribed to OneSignal push notifications.", true);
@@ -136,12 +129,12 @@ async function enableOneSignalPush() {
 
     enablePushBtn.disabled = false;
     setPushStatus(
-      "⚠️ iOS allowed notifications, but OneSignal has not confirmed the push subscription yet. Please make sure this app is installed on the Home Screen and try again."
+      "⚠️ iOS allowed notifications, but OneSignal has not created the subscription yet. Please close and reopen Birthday Assistant from the Home Screen, then try again."
     );
   } catch (error) {
     console.error("OneSignal push setup failed:", error);
     enablePushBtn.disabled = false;
-    setPushStatus("⚠️ We couldn't confirm the OneSignal subscription. Please try again.");
+    setPushStatus("⚠️ OneSignal setup failed. Please refresh and try again.");
   }
 }
 
@@ -171,8 +164,11 @@ async function testLocalNotification() {
   }
 }
 
-window.addEventListener("onesignal-ready", async () => {
-  await refreshPushStatus();
+window.addEventListener("onesignal-ready", refreshPushStatus);
+
+window.addEventListener("onesignal-error", () => {
+  setPushStatus("⚠️ OneSignal could not initialize. Please refresh the app.");
+  enablePushBtn.disabled = false;
 });
 
 enablePushBtn.addEventListener("click", enableOneSignalPush);
@@ -188,10 +184,8 @@ if ("serviceWorker" in navigator) {
 
 updateInstallHint();
 
-if (getOneSignal()) {
-  refreshPushStatus();
-} else {
-  setPushStatus("⏳ Connecting to push service...");
-  // In case OneSignal initializes very shortly after this script executes.
-  setTimeout(refreshPushStatus, 2000);
-}
+setTimeout(() => {
+  if (!getOneSignal()) {
+    setPushStatus("⚠️ OneSignal is taking too long to initialize. Please refresh the app.");
+  }
+}, 8000);

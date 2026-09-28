@@ -12,12 +12,22 @@
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: "eafe14ef-fde2-4de8-880f-686a9a28d54e"
-      });
+      try {
+        await OneSignal.init({
+          appId: "eafe14ef-fde2-4de8-880f-686a9a28d54e",
+          serviceWorkerPath: "onesignal/OneSignalSDKWorker.js",
+          serviceWorkerParam: {
+            scope: "/birthday-assistant/onesignal/"
+          }
+        });
 
-      window.birthdayAssistantOneSignal = OneSignal;
-      window.dispatchEvent(new Event("onesignal-ready"));
+        window.birthdayAssistantOneSignal = OneSignal;
+        window.dispatchEvent(new Event("onesignal-ready"));
+      } catch (error) {
+        console.error("OneSignal initialization failed:", error);
+        window.birthdayAssistantOneSignalError = error;
+        window.dispatchEvent(new Event("onesignal-error"));
+      }
     });
   </script>
 </head>
@@ -34,7 +44,7 @@
       </button>
 
       <p id="pushStatus" class="status">
-        Push notifications are not enabled yet.
+        ⏳ Connecting to push service...
       </p>
 
       <button id="testLocalBtn" class="secondary">

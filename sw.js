@@ -1,4 +1,4 @@
-const CACHE_NAME = "birthday-assistant-v1-2-1";
+const CACHE_NAME = "birthday-assistant-v1-2-2";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -31,6 +31,11 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
+
+  const url = new URL(event.request.url);
+
+  // Let OneSignal's own service worker path pass through untouched.
+  if (url.pathname.includes("/onesignal/")) return;
 
   event.respondWith(
     fetch(event.request)
