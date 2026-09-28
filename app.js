@@ -19,29 +19,51 @@ function logDiag(message) {
   console.log("[Birthday Assistant]", message);
 }
 
+function workerState(worker) {
+  if (!worker) return "none";
+  if (worker.state) return worker.state;
+  return "unknown";
+}
+
 async function inspectServiceWorkers() {
   if (!("serviceWorker" in navigator)) {
     diag("diagPwaSw", "Not supported");
     diag("diagOsSw", "Not supported");
+    diag("diagOsState", "Not supported");
+    diag("diagOsScope", "Not supported");
     return;
   }
 
   try {
     const regs = await navigator.serviceWorker.getRegistrations();
     const scopes = regs.map(r => r.scope);
-    diag(
-      "diagPwaSw",
-      scopes.some(s => s.endsWith("/birthday-assistant/")) ? "Registered" : "Not found"
-    );
-    diag(
-      "diagOsSw",
-      scopes.some(s => s.endsWith("/birthday-assistant/onesignal/")) ? "Registered" : "Not found"
-    );
-    logDiag("Service-worker scopes: " + (scopes.length ? scopes.join(" | ") : "none"));
+
+    const pwa = regs.find(r => r.scope.endsWith("/birthday-assistant/"));
+    const os = regs.find(r => r.scope.endsWith("/birthday-assistant/onesignal/"));
+
+    diag("diagPwaSw", pwa ? "Registered" : "Not found");
+    diag("diagOsSw", os ? "Registered" : "Not found");
+
+    if (os) {
+      const worker = os.active || os.waiting || os.installing;
+      diag("diagOsState", workerState(worker));
+      diag("diagOsScope", os.scope);
+      logDiag(`OneSignal registration found. Scope=${os.scope}, state=${workerState(worker)}`);
+      if (worker?.scriptURL) {
+        logDiag(`OneSignal worker script=${worker.scriptURL}`);
+      }
+    } else {
+      diag("diagOsState", "No registration");
+      diag("diagOsScope", "None");
+    }
+
+    logDiag("All service-worker scopes: " + (scopes.length ? scopes.join(" | ") : "none"));
   } catch (error) {
     diag("diagPwaSw", "Error");
     diag("diagOsSw", "Error");
-    logDiag("Could not inspect service workers: " + error.message);
+    diag("diagOsState", "Error");
+    diag("diagOsScope", "Error");
+    logDiag("Service-worker inspection error: " + error.message);
   }
 }
 
@@ -56,11 +78,7 @@ async function updateDiagnostics() {
     "PushManager" in window;
 
   diag("diagSupport", supported ? "Yes" : "No");
-
-  diag(
-    "diagPermission",
-    "Notification" in window ? Notification.permission : "Unavailable"
-  );
+  diag("diagPermission", "Notification" in window ? Notification.permission : "Unavailable");
 
   if (!OneSignal) {
     diag("diagOptedIn", "Unknown");
@@ -75,14 +93,12 @@ async function updateDiagnostics() {
     diag("diagOptedIn", String(sub?.optedIn ?? "undefined"));
     diag("diagSubId", sub?.id || "None");
     diag("diagToken", sub?.token ? "Present" : "None");
-    logDiag(
-      `Subscription state: optedIn=${sub?.optedIn}, id=${sub?.id || "none"}, token=${sub?.token ? "present" : "none"}`
-    );
+    logDiag(`Subscription: optedIn=${sub?.optedIn}, id=${sub?.id || "none"}, token=${sub?.token ? "present" : "none"}`);
   } catch (error) {
     diag("diagOptedIn", "Error");
     diag("diagSubId", "Error");
     diag("diagToken", "Error");
-    logDiag("Subscription inspection failed: " + error.message);
+    logDiag("Subscription inspection error: " + error.message);
   }
 
   await inspectServiceWorkers();
@@ -112,11 +128,17 @@ async function updatePushState() {
 
     await updateDiagnostics();
   } catch (error) {
-    logDiag("State update failed: " + error.message);
+    logDiag("State update error: " + error.message);
     setStatus("⚠️ Unable to read push subscription status.");
     enablePushButton.disabled = false;
   }
 }
+
+window.addEventListener("onesignal-worker-registered", async () => {
+  diag("diagOsSw", "Registered");
+  logDiag("Explicit OneSignal worker registration completed.");
+  await inspectServiceWorkers();
+});
 
 window.addEventListener("onesignal-ready", async () => {
   setStatus("🔔 OneSignal initialized. Ready to enable push.");
@@ -124,7 +146,7 @@ window.addEventListener("onesignal-ready", async () => {
   await updateDiagnostics();
 
   try {
-    window.__oneSignal.User.PushSubscription.addEventListener("change", async (event) => {
+    window.__oneSignal.User.PushSubscription.addEventListener("change", async () => {
       logDiag("Push subscription changed.");
       await updateDiagnostics();
       await updatePushState();
@@ -136,9 +158,9 @@ window.addEventListener("onesignal-ready", async () => {
 
 window.addEventListener("onesignal-error", async (event) => {
   const error = event.detail;
-  setStatus("⚠️ OneSignal could not initialize. Please refresh the app.");
-  diag("diagSdk", "Initialization failed");
-  logDiag("OneSignal initialization error: " + (error?.message || String(error)));
+  setStatus("⚠️ OneSignal setup failed. See Diagnostics below.");
+  diag("diagSdk", "Setup failed");
+  logDiag("OneSignal setup error: " + (error?.message || String(error)));
   await inspectServiceWorkers();
 });
 
@@ -153,15 +175,24 @@ enablePushButton.addEventListener("click", async () => {
       throw new Error("OneSignal SDK is not initialized.");
     }
 
+    // Re-check the worker registration immediately before enabling push.
+    const regs = await navigator.serviceWorker.getRegistrations();
+    const osReg = regs.find(r => r.scope.endsWith("/birthday-assistant/onesignal/"));
+
+    if (!osReg) {
+      throw new Error("OneSignal worker registration is missing at enable time.");
+    }
+
+    logDiag(`Using OneSignal worker scope: ${osReg.scope}`);
+
     const permission = await OneSignal.Notifications.requestPermission();
     logDiag("Notification permission result: " + permission);
 
-    // Explicitly opt the OneSignal subscription in after permission.
     if (OneSignal.User?.PushSubscription?.optIn) {
       await OneSignal.User.PushSubscription.optIn();
       logDiag("PushSubscription.optIn() completed.");
     } else {
-      logDiag("PushSubscription.optIn() is not available.");
+      throw new Error("PushSubscription.optIn() is unavailable.");
     }
 
     await updateDiagnostics();
@@ -211,10 +242,11 @@ testLocalButton.addEventListener("click", async () => {
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
-      await navigator.serviceWorker.register("sw.js", {
+      const reg = await navigator.serviceWorker.register("sw.js", {
         scope: "/birthday-assistant/"
       });
       logDiag("Birthday Assistant PWA service worker registered.");
+      logDiag(`PWA worker state=${workerState(reg.active || reg.waiting || reg.installing)}`);
       await inspectServiceWorkers();
     } catch (error) {
       logDiag("PWA service worker registration failed: " + error.message);
@@ -223,8 +255,8 @@ if ("serviceWorker" in navigator) {
 }
 
 setTimeout(() => {
-  if (pushStatus.textContent.includes("Connecting")) {
-    setStatus("⚠️ OneSignal is taking too long to initialize. Please refresh the app.");
+  if (pushStatus.textContent.includes("Preparing")) {
+    setStatus("⚠️ OneSignal is taking too long to initialize. See Diagnostics below.");
     logDiag("Initialization safety timeout reached.");
     updateDiagnostics();
   }
