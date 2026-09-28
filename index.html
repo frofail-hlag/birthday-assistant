@@ -68,12 +68,16 @@
         window.__oneSignalWorkerRegistration = registration;
         window.dispatchEvent(new Event("onesignal-worker-registered"));
 
+        // V1.2.7: explicitly override OneSignal's Typical Site worker defaults.
+        // The OneSignal dashboard is configured as a Typical Site, while our
+        // GitHub Pages PWA uses a dedicated worker under /onesignal/.
         await OneSignal.init({
           appId: "eafe14ef-fde2-4de8-880f-686a9a28d54e",
-          serviceWorkerPath: "onesignal/OneSignalSDKWorker.js",
+          serviceWorkerPath: "/birthday-assistant/onesignal/OneSignalSDKWorker.js",
           serviceWorkerParam: {
             scope: "/birthday-assistant/onesignal/"
-          }
+          },
+          serviceWorkerOverrideForTypical: true
         });
 
         window.dispatchEvent(new Event("onesignal-ready"));
