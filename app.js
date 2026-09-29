@@ -9,7 +9,7 @@ const reminderCount = $("reminderCount");
 
 const PUSH_SETUP_KEY = "birthdayAssistantPushSetupCompleted";
 const REMINDERS_KEY = "birthdayAssistantRemindersV1";
-const REMINDER_TTL_MS = 24 * 60 * 60 * 1000;
+const REMINDER_TTL_MS = 2 * 60 * 1000;
 
 function setStatus(text) {
   pushStatus.textContent = text;
