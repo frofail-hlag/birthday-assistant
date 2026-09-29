@@ -21,6 +21,22 @@
       <p>Never miss an important birthday.</p>
     </header>
 
+    <section class="card reminders-card" id="remindersCard">
+      <div class="section-heading">
+        <div>
+          <h2>🔔 Birthday Reminders</h2>
+          <p class="section-subtitle">Your active birthday reminders stay here for 24 hours.</p>
+        </div>
+        <span id="reminderCount" class="count-badge">0</span>
+      </div>
+      <div id="remindersList" class="reminders-list"></div>
+      <div id="noReminders" class="empty-state">
+        <div class="empty-icon">🎈</div>
+        <strong>No active reminders</strong>
+        <span>Birthday notifications you receive will appear here.</span>
+      </div>
+    </section>
+
     <section class="card">
       <h2>🔔 Notifications</h2>
       <p id="pushStatus">⏳ Preparing push notifications...</p>
@@ -58,10 +74,8 @@
     OneSignalDeferred.push(async function(OneSignal) {
       try {
         OneSignal.Debug.setLogLevel("trace");
-
         window.__oneSignal = OneSignal;
 
-        // V1.2.6: explicitly register the OneSignal worker first.
         const registration = await navigator.serviceWorker.register(
           "onesignal/OneSignalSDKWorker.js",
           { scope: "/birthday-assistant/onesignal/" }
@@ -70,9 +84,6 @@
         window.__oneSignalWorkerRegistration = registration;
         window.dispatchEvent(new Event("onesignal-worker-registered"));
 
-        // V1.2.7: explicitly override OneSignal's Typical Site worker defaults.
-        // The OneSignal dashboard is configured as a Typical Site, while our
-        // GitHub Pages PWA uses a dedicated worker under /onesignal/.
         await OneSignal.init({
           appId: "eafe14ef-fde2-4de8-880f-686a9a28d54e",
           serviceWorkerPath: "/birthday-assistant/onesignal/OneSignalSDKWorker.js",

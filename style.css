@@ -1,4 +1,4 @@
-* { box-sizing: border-box; }
+* { box-sizing:border-box; }
 body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#f4f7fa; color:#0b1f33; }
 .app { max-width:680px; margin:0 auto; padding:24px 18px 40px; }
 .hero { text-align:center; padding:18px 10px 24px; }
@@ -8,6 +8,22 @@ h1 { margin:8px 0; font-size:30px; }
 .card { background:white; border-radius:18px; padding:20px; margin:14px 0; box-shadow:0 6px 20px rgba(11,31,51,.08); }
 .card h2 { margin-top:0; font-size:20px; }
 .card p { color:#5d6b78; line-height:1.5; }
+.section-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.section-heading h2 { margin-bottom:4px; }
+.section-subtitle { margin:0; font-size:14px; }
+.count-badge { min-width:30px; height:30px; padding:5px 9px; border-radius:999px; background:#e9eef3; color:#0b1f33; font-weight:700; text-align:center; }
+.reminders-list { display:grid; gap:12px; margin-top:16px; }
+.reminder-item { display:flex; gap:13px; align-items:flex-start; padding:14px; border:1px solid #e7edf2; border-radius:14px; background:#fbfcfd; }
+.reminder-icon { width:42px; height:42px; display:grid; place-items:center; flex:0 0 42px; border-radius:12px; background:#eef3f7; font-size:22px; }
+.reminder-content { min-width:0; }
+.reminder-content h3 { margin:0 0 5px; font-size:17px; }
+.reminder-content p { margin:0 0 7px; font-size:14px; color:#425466; }
+.reminder-expiry { font-size:12px; color:#71808d; }
+.empty-state { padding:20px 8px 6px; text-align:center; color:#71808d; }
+.empty-state[hidden] { display:none; }
+.empty-icon { font-size:34px; margin-bottom:6px; }
+.empty-state strong, .empty-state span { display:block; }
+.empty-state strong { color:#425466; margin-bottom:3px; }
 button { width:100%; border:0; border-radius:12px; padding:14px 16px; margin-top:10px; font-size:16px; font-weight:600; cursor:pointer; background:#0b1f33; color:white; }
 button.secondary { background:#e9eef3; color:#0b1f33; }
 button:disabled { opacity:.55; cursor:default; }
@@ -16,10 +32,9 @@ button:disabled { opacity:.55; cursor:default; }
 .diag-row span { color:#5d6b78; }
 .diag-row strong { text-align:right; overflow-wrap:anywhere; max-width:60%; }
 #diagLog { margin:14px 0 0; padding:12px; background:#0b1f33; color:#dce7ef; border-radius:10px; white-space:pre-wrap; overflow-wrap:anywhere; max-height:320px; overflow:auto; font-size:11px; }
-
-.details-placeholder { display:none; }
 details.diagnostics summary { cursor:pointer; font-size:18px; font-weight:700; list-style:none; }
 details.diagnostics summary::-webkit-details-marker { display:none; }
 details.diagnostics summary::after { content:"＋"; float:right; font-size:20px; }
 details.diagnostics[open] summary::after { content:"−"; }
 .diag-content { margin-top:14px; }
+@media (max-width:430px) { .app { padding-left:14px; padding-right:14px; } .card { padding:17px; } }

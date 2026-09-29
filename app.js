@@ -3,7 +3,13 @@ const $ = (id) => document.getElementById(id);
 const pushStatus = $("pushStatus");
 const enablePushButton = $("enablePush");
 const testLocalButton = $("testLocal");
+const remindersList = $("remindersList");
+const noReminders = $("noReminders");
+const reminderCount = $("reminderCount");
+
 const PUSH_SETUP_KEY = "birthdayAssistantPushSetupCompleted";
+const REMINDERS_KEY = "birthdayAssistantRemindersV1";
+const REMINDER_TTL_MS = 24 * 60 * 60 * 1000;
 
 function setStatus(text) {
   pushStatus.textContent = text;
@@ -32,6 +38,135 @@ function markPushSetupCompleted() {
 
 function hasCompletedPushSetup() {
   try { return localStorage.getItem(PUSH_SETUP_KEY) === "true"; } catch (_) { return false; }
+}
+
+function readReminders() {
+  try {
+    const raw = localStorage.getItem(REMINDERS_KEY);
+    const reminders = raw ? JSON.parse(raw) : [];
+    return Array.isArray(reminders) ? reminders : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function writeReminders(reminders) {
+  try { localStorage.setItem(REMINDERS_KEY, JSON.stringify(reminders)); } catch (_) {}
+}
+
+function makeReminderId(name, createdAt) {
+  return `${String(name).trim().toLowerCase()}-${createdAt}`;
+}
+
+function cleanupExpiredReminders() {
+  const now = Date.now();
+  const active = readReminders().filter(reminder => {
+    const expiresAt = Number(reminder.expiresAt || 0);
+    return expiresAt > now;
+  });
+
+  if (active.length !== readReminders().length) {
+    writeReminders(active);
+  }
+  return active;
+}
+
+function addBirthdayReminder({ name, message, createdAt = Date.now() }) {
+  const cleanName = String(name || "").trim();
+  if (!cleanName) return;
+
+  const active = cleanupExpiredReminders();
+  const normalizedName = cleanName.toLowerCase();
+
+  // Prevent duplicate reminders for the same birthday person while an existing
+  // 24-hour reminder is still active.
+  const existing = active.find(r => String(r.name).trim().toLowerCase() === normalizedName);
+  if (existing) {
+    renderReminders(active);
+    return;
+  }
+
+  const reminder = {
+    id: makeReminderId(cleanName, createdAt),
+    name: cleanName,
+    message: message || `🎉 Don't forget! Tomorrow is ${cleanName}'s birthday!`,
+    createdAt,
+    expiresAt: createdAt + REMINDER_TTL_MS
+  };
+
+  active.unshift(reminder);
+  writeReminders(active);
+  renderReminders(active);
+  logDiag(`Birthday reminder stored for ${cleanName}; expires ${new Date(reminder.expiresAt).toLocaleString()}.`);
+}
+
+function formatAgeRemaining(expiresAt) {
+  const remaining = Math.max(0, expiresAt - Date.now());
+  const hours = Math.floor(remaining / (60 * 60 * 1000));
+  const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+  if (hours > 0) return `Available for ${hours}h ${minutes}m`;
+  return `Available for ${Math.max(1, minutes)}m`;
+}
+
+function renderReminders(reminders = cleanupExpiredReminders()) {
+  const active = reminders.filter(r => Number(r.expiresAt) > Date.now());
+  reminderCount.textContent = String(active.length);
+  remindersList.innerHTML = "";
+
+  if (!active.length) {
+    noReminders.hidden = false;
+    return;
+  }
+
+  noReminders.hidden = true;
+
+  active.forEach(reminder => {
+    const article = document.createElement("article");
+    article.className = "reminder-item";
+
+    const icon = document.createElement("div");
+    icon.className = "reminder-icon";
+    icon.textContent = "🎂";
+
+    const content = document.createElement("div");
+    content.className = "reminder-content";
+
+    const title = document.createElement("h3");
+    title.textContent = `${reminder.name}'s Birthday`;
+
+    const body = document.createElement("p");
+    body.textContent = reminder.message;
+
+    const expiry = document.createElement("span");
+    expiry.className = "reminder-expiry";
+    expiry.textContent = formatAgeRemaining(Number(reminder.expiresAt));
+
+    content.append(title, body, expiry);
+    article.append(icon, content);
+    remindersList.appendChild(article);
+  });
+}
+
+function importReminderFromLaunchUrl() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const birthday = params.get("birthday");
+    if (!birthday) return;
+
+    const cleanName = birthday.trim();
+    if (!cleanName) return;
+
+    const message = `🎉 Don't forget! Tomorrow is ${cleanName}'s birthday! 🎂`;
+    addBirthdayReminder({ name: cleanName, message });
+
+    // Remove the notification parameters after consuming them so a refresh
+    // does not create a new reminder.
+    const cleanUrl = `${window.location.pathname}${window.location.hash}`;
+    window.history.replaceState({}, document.title, cleanUrl);
+    logDiag(`Imported birthday reminder from notification launch URL: ${cleanName}`);
+  } catch (error) {
+    logDiag("Launch URL reminder import failed: " + error.message);
+  }
 }
 
 async function inspectServiceWorkers() {
@@ -144,8 +279,6 @@ async function updatePushState({ allowWaiting = true } = {}) {
 
     const permission = "Notification" in window ? Notification.permission : "unsupported";
 
-    // If the user has already completed setup before, don't immediately ask them
-    // to press Enable again while OneSignal is still restoring its subscription.
     if (hasCompletedPushSetup() && permission === "granted") {
       setStatus("🔄 Restoring notification connection...");
       enablePushButton.textContent = "🔄 Checking Notifications...";
@@ -272,7 +405,8 @@ testLocalButton.addEventListener("click", async () => {
       body: "Local notification test — everything is working!",
       icon: "icons/icon-192.png",
       badge: "icons/icon-192.png",
-      tag: "birthday-assistant-local-test"
+      tag: "birthday-assistant-local-test",
+      data: { url: "/birthday-assistant/" }
     });
   } catch (error) {
     logDiag("Local notification failed: " + error.message);
@@ -292,6 +426,16 @@ if ("serviceWorker" in navigator) {
     }
   });
 }
+
+// V1.4 reminder layer: import the birthday carried by the notification launch
+// URL, then keep active reminders for exactly 24 hours.
+cleanupExpiredReminders();
+importReminderFromLaunchUrl();
+renderReminders();
+
+// Refresh the visible expiry countdown and clean up automatically while the app
+// remains open. Storage is also cleaned every time the app is reopened.
+setInterval(() => renderReminders(), 60 * 1000);
 
 setTimeout(() => {
   if (pushStatus.textContent.includes("Preparing")) {
