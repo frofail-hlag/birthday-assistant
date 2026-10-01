@@ -726,3 +726,101 @@ body {
   opacity: .32;
   padding-top: 2px;
 }
+
+
+/* V1.5.3 — My Cards library */
+.my-cards-card {
+  background:
+    radial-gradient(circle at 12% 15%, rgba(94, 234, 212, .10), transparent 24%),
+    radial-gradient(circle at 88% 10%, rgba(129, 140, 248, .10), transparent 28%),
+    linear-gradient(135deg, rgba(255,255,255,.98), rgba(245,248,252,.98));
+}
+
+.saved-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.saved-card-item {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(20,35,55,.08);
+  border-radius: 20px;
+  background: rgba(255,255,255,.82);
+  box-shadow: 0 10px 28px rgba(20,35,55,.07);
+}
+
+.saved-card-preview {
+  width: 100%;
+  max-width: none;
+  aspect-ratio: 4 / 5;
+  border-radius: 17px;
+  padding: 20px;
+  box-shadow: 0 12px 26px rgba(15,25,45,.15);
+}
+
+.saved-card-preview .preview-name {
+  font-size: clamp(1.45rem, 4vw, 2.5rem);
+}
+
+.saved-card-preview .preview-message {
+  font-size: clamp(.7rem, 1.8vw, .92rem);
+  max-width: 270px;
+}
+
+.saved-card-preview .card-eyebrow {
+  font-size: .58rem;
+}
+
+.saved-card-preview .card-decoration {
+  font-size: 1.15rem;
+}
+
+.saved-card-meta {
+  padding: 12px 3px 8px;
+}
+
+.saved-card-person {
+  font-weight: 900;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.saved-card-details {
+  margin-top: 3px;
+  font-size: .72rem;
+  opacity: .55;
+  overflow-wrap: anywhere;
+}
+
+.saved-card-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.saved-card-actions button {
+  min-width: 0;
+  padding: 9px 6px;
+  font-size: .72rem;
+  white-space: nowrap;
+}
+
+.danger-action {
+  color: #9f1239;
+  background: rgba(159,18,57,.06);
+}
+
+.my-cards-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+@media (max-width: 759px) {
+  .saved-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}

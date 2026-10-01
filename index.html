@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="style.css">
   <title>Birthday Assistant</title>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <!-- Birthday Assistant V1.5.2 -->
+  <!-- Birthday Assistant V1.5.3 -->
 </head>
 <body>
   <main class="app">
@@ -35,6 +35,26 @@
         <div class="empty-icon">🎈</div>
         <strong>No active reminders</strong>
         <span>Birthday notifications you receive will appear here.</span>
+      </div>
+    </section>
+
+
+    <section class="card dashboard-wide my-cards-card" id="myCardsCard">
+      <div class="section-heading">
+        <div>
+          <h2>🖼️ My Cards</h2>
+          <p class="section-subtitle">Your saved birthday cards stay here until you delete them.</p>
+        </div>
+        <span id="savedCardCount" class="count-badge">0</span>
+      </div>
+      <div id="savedCardsList" class="saved-cards-grid"></div>
+      <div id="noSavedCards" class="empty-state">
+        <div class="empty-icon">🖼️</div>
+        <strong>No saved cards yet</strong>
+        <span>Create a card from a birthday reminder and save it here.</span>
+      </div>
+      <div class="my-cards-actions">
+        <button type="button" id="createNewCardFromLibrary" class="primary-action">＋ Create New Card</button>
       </div>
     </section>
 
@@ -172,7 +192,7 @@
 </div>
 
 
-<div class="app-version" aria-label="App version">V1.5.2.4</div>
+<div class="app-version" aria-label="App version">V1.5.3</div>
 
 </main>
 
@@ -254,6 +274,6 @@
   };
 </script>
 
-  <script src="app.js?v=1.5.2.4"></script>
+  <script src="app.js?v=1.5.3"></script>
 </body>
 </html>
