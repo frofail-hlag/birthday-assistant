@@ -206,3 +206,71 @@ details.diagnostics[open] summary::after { content:"−"; }
     display: none;
   }
 }
+
+
+/* =========================================================
+   V1.5.2 — Birthday Card Editor
+   ========================================================= */
+.card-editor[hidden] { display: none !important; }
+.card-editor {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(255,255,255,.99), rgba(247,249,252,.99));
+  border: 1px solid rgba(20,35,55,.08);
+  box-shadow: 0 12px 30px rgba(20,35,55,.08);
+}
+.editor-topbar { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+.editor-back { border:0; background:transparent; padding:8px 4px; font-weight:700; cursor:pointer; }
+.editor-title-wrap { flex:1; }
+.editor-title-wrap h2 { margin:0; }
+.editor-layout { display:grid; gap:20px; }
+.card-preview-wrap { display:flex; justify-content:center; }
+.birthday-card-preview {
+  width:min(100%, 430px);
+  aspect-ratio:4/5;
+  position:relative;
+  overflow:hidden;
+  border-radius:28px;
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  text-align:center;
+  box-shadow:0 20px 45px rgba(20,35,55,.18);
+  transition:background .25s ease, color .25s ease;
+}
+.card-preview-inner { position:relative; z-index:2; margin:auto 0; }
+.card-small-title { font-size:.8rem; letter-spacing:.2em; font-weight:900; margin-bottom:10px; }
+.card-preview-name { font-size:clamp(2rem, 9vw, 3.2rem); line-height:1.02; font-weight:900; word-break:break-word; }
+.card-preview-message { margin:20px auto 0; max-width:330px; font-size:1rem; line-height:1.5; font-weight:650; white-space:pre-wrap; word-break:break-word; }
+.card-decoration { position:relative; z-index:2; font-size:clamp(1.5rem, 6vw, 2.3rem); letter-spacing:.08em; }
+.card-sparkles { position:absolute; inset:12% 10% auto; opacity:.55; font-size:1.2rem; letter-spacing:1.2rem; }
+.editor-controls { display:grid; gap:16px; }
+.editor-field { display:grid; gap:8px; }
+.editor-field label, .field-label-row label { font-weight:800; }
+.field-label-row { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.character-count, .selected-design-label { font-size:.78rem; opacity:.6; }
+.editor-field input, .editor-field textarea {
+  width:100%; box-sizing:border-box; border:1px solid rgba(20,35,55,.14); border-radius:14px;
+  padding:13px 14px; font:inherit; background:#fff; color:inherit; outline:none;
+}
+.editor-field textarea { resize:vertical; min-height:120px; }
+.editor-field input:focus, .editor-field textarea:focus { border-color:rgba(11,31,51,.45); box-shadow:0 0 0 3px rgba(11,31,51,.08); }
+.design-choices { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.design-choice { border:1px solid rgba(20,35,55,.09); border-radius:16px; background:#fff; padding:9px 6px; display:grid; gap:6px; place-items:center; font:inherit; font-size:.78rem; font-weight:750; cursor:pointer; }
+.design-choice.selected { border-color:#0b1f33; box-shadow:0 0 0 2px rgba(11,31,51,.1); }
+.design-thumb { width:58px; height:58px; border-radius:13px; display:grid; place-items:center; font-size:1.55rem; }
+.editor-status { min-height:20px; font-size:.86rem; text-align:center; opacity:.8; }
+.editor-save { width:100%; }
+.theme-celebration { color:#fff; background:radial-gradient(circle at 20% 20%, #ffb4b4, transparent 28%), radial-gradient(circle at 85% 18%, #ffd76b, transparent 25%), linear-gradient(145deg,#ff5f6d,#ffc371); }
+.theme-kids { color:#26324a; background:radial-gradient(circle at 20% 20%, #fff, transparent 20%), radial-gradient(circle at 80% 70%, #fff, transparent 22%), linear-gradient(145deg,#a8edea,#fed6e3); }
+.theme-sports { color:#fff; background:radial-gradient(circle at 80% 20%, #fff, transparent 14%), linear-gradient(145deg,#0f4c81,#3f8cff); }
+.theme-elegant { color:#fff; background:radial-gradient(circle at 50% 0%, rgba(255,255,255,.28), transparent 30%), linear-gradient(145deg,#202020,#6b5b73); }
+.theme-fun { color:#253047; background:radial-gradient(circle at 15% 20%, #ffe66d, transparent 22%), radial-gradient(circle at 85% 25%, #ff8fab, transparent 22%), linear-gradient(145deg,#7bdff2,#b2f7ef); }
+.theme-classic { color:#fff; background:linear-gradient(145deg,#8f1d3f,#d9a441); }
+.design-thumb.theme-elegant, .design-thumb.theme-classic, .design-thumb.theme-sports, .design-thumb.theme-celebration { color:#fff; }
+@media (min-width:760px) {
+  .editor-layout { grid-template-columns:minmax(340px, 1.05fr) minmax(300px, .95fr); align-items:start; }
+  .design-choices { grid-template-columns:repeat(3,1fr); }
+}

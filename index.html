@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="style.css">
   <title>Birthday Assistant</title>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <!-- Birthday Assistant V1.5.1 -->
+  <!-- Birthday Assistant V1.5.2 -->
 </head>
 <body>
   <main class="app">
@@ -106,6 +106,77 @@
   </div>
 
   <button type="button" id="closeCardCreationHub" class="secondary-action card-hub-back">← Back to Birthday Reminders</button>
+</section>
+
+
+<section id="cardEditor" class="card-editor" hidden aria-labelledby="cardEditorTitle">
+  <div class="editor-topbar">
+    <button type="button" id="closeCardEditor" class="editor-back">← Zurück</button>
+    <div class="editor-title-wrap">
+      <div class="section-kicker">Birthday Cards</div>
+      <h2 id="cardEditorTitle">🎨 Geburtstagskarte erstellen</h2>
+    </div>
+  </div>
+
+  <div class="editor-layout">
+    <div class="card-preview-wrap">
+      <div id="birthdayCardPreview" class="birthday-card-preview theme-celebration" aria-label="Vorschau der Geburtstagskarte">
+        <div class="card-sparkles" aria-hidden="true">✦ ✨ ✦</div>
+        <div class="card-decoration card-decoration-top" aria-hidden="true">🎈 🎈 🎈</div>
+        <div class="card-preview-inner">
+          <div class="card-small-title">HAPPY BIRTHDAY</div>
+          <div id="previewName" class="card-preview-name">Daniel!</div>
+          <div id="previewMessage" class="card-preview-message">🎂 Alles Gute zum Geburtstag! Ich wünsche dir einen wunderschönen Tag voller Freude, Glück und schöner Momente! 🎉</div>
+        </div>
+        <div class="card-decoration card-decoration-bottom" aria-hidden="true">🎂 🎁 🎉</div>
+      </div>
+    </div>
+
+    <div class="editor-controls">
+      <div class="editor-field">
+        <label for="cardPersonName">👤 Name</label>
+        <input id="cardPersonName" type="text" maxlength="40" autocomplete="off" placeholder="Name">
+      </div>
+
+      <div class="editor-field">
+        <div class="field-label-row">
+          <label for="cardMessage">💌 Deine Nachricht</label>
+          <span id="cardMessageCount" class="character-count">0/220</span>
+        </div>
+        <textarea id="cardMessage" maxlength="220" rows="5" placeholder="Deine Geburtstagsnachricht..."></textarea>
+      </div>
+
+      <div class="editor-field">
+        <div class="field-label-row">
+          <label>🎨 Design auswählen</label>
+          <span id="selectedDesignLabel" class="selected-design-label">Feier</span>
+        </div>
+        <div id="designChoices" class="design-choices" role="listbox" aria-label="Geburtstagskarten-Designs">
+          <button type="button" class="design-choice selected" data-design="celebration" role="option" aria-selected="true">
+            <span class="design-thumb theme-celebration">🎉</span><span>Feier</span>
+          </button>
+          <button type="button" class="design-choice" data-design="kids" role="option" aria-selected="false">
+            <span class="design-thumb theme-kids">🧸</span><span>Kinder</span>
+          </button>
+          <button type="button" class="design-choice" data-design="sports" role="option" aria-selected="false">
+            <span class="design-thumb theme-sports">⚽</span><span>Sport</span>
+          </button>
+          <button type="button" class="design-choice" data-design="elegant" role="option" aria-selected="false">
+            <span class="design-thumb theme-elegant">✨</span><span>Elegant</span>
+          </button>
+          <button type="button" class="design-choice" data-design="fun" role="option" aria-selected="false">
+            <span class="design-thumb theme-fun">😄</span><span>Fröhlich</span>
+          </button>
+          <button type="button" class="design-choice" data-design="classic" role="option" aria-selected="false">
+            <span class="design-thumb theme-classic">🎂</span><span>Klassisch</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="cardEditorStatus" class="editor-status" aria-live="polite"></div>
+      <button type="button" id="saveBirthdayCard" class="primary-action editor-save">💾 Karte speichern</button>
+    </div>
+  </div>
 </section>
 
 <div id="v151ComingSoon" class="v151-coming-soon" hidden role="dialog" aria-modal="true" aria-labelledby="v151ComingSoonTitle">

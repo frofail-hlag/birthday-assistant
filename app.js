@@ -142,7 +142,14 @@ function renderReminders(reminders = cleanupExpiredReminders()) {
     expiry.textContent = formatAgeRemaining(Number(reminder.expiresAt));
 
     content.append(title, body, expiry);
-    article.append(icon, content);
+
+    const createButton = document.createElement("button");
+    createButton.type = "button";
+    createButton.className = "primary-action create-birthday-card-button";
+    createButton.textContent = "🎨 Create Birthday Card";
+    createButton.setAttribute("data-birthday-card-create", reminder.name);
+
+    article.append(icon, content, createButton);
     remindersList.appendChild(article);
   });
 }
@@ -446,6 +453,119 @@ setTimeout(() => {
 }, 12000);
 
 
+
+/* V1.5.2 card editor */
+(function () {
+  const editor = document.getElementById("cardEditor");
+  if (!editor) return;
+
+  const preview = document.getElementById("birthdayCardPreview");
+  const nameInput = document.getElementById("cardPersonName");
+  const messageInput = document.getElementById("cardMessage");
+  const previewName = document.getElementById("previewName");
+  const previewMessage = document.getElementById("previewMessage");
+  const messageCount = document.getElementById("cardMessageCount");
+  const selectedLabel = document.getElementById("selectedDesignLabel");
+  const status = document.getElementById("cardEditorStatus");
+  const saveButton = document.getElementById("saveBirthdayCard");
+  const closeEditor = document.getElementById("closeCardEditor");
+  const hub = document.getElementById("cardCreationHub");
+
+  const designs = {
+    celebration: { label: "Feier", title: "HAPPY BIRTHDAY", decorations: "🎈 🎈 🎈", bottom: "🎂 🎁 🎉" },
+    kids: { label: "Kinder", title: "HURRA!", decorations: "🌈 🧸 ⭐", bottom: "🎈 🦄 🎁" },
+    sports: { label: "Sport", title: "HAPPY BIRTHDAY", decorations: "⚽ 🏆 ⚽", bottom: "🏀 🎉 🏅" },
+    elegant: { label: "Elegant", title: "HAPPY BIRTHDAY", decorations: "✦ ✨ ✦", bottom: "✧ 🎂 ✧" },
+    fun: { label: "Fröhlich", title: "LET'S CELEBRATE!", decorations: "🥳 🎉 😄", bottom: "🎁 🎈 🥳" },
+    classic: { label: "Klassisch", title: "ALLES GUTE", decorations: "🎂 ✨ 🎂", bottom: "🎁 ❤️ 🎉" }
+  };
+
+  let currentDesign = "celebration";
+  let currentBirthday = "";
+
+  function defaultMessage(name) {
+    return `🎂 Alles Gute zum Geburtstag, ${name || ""}! Ich wünsche dir einen wunderschönen Tag voller Freude, Glück und schöner Momente! 🎉`.replace("! !", "!").trim();
+  }
+
+  function updatePreview() {
+    const name = nameInput.value.trim() || "Dein Name";
+    const message = messageInput.value.trim() || defaultMessage(name);
+    previewName.textContent = `${name}!`;
+    previewMessage.textContent = message;
+    messageCount.textContent = `${messageInput.value.length}/220`;
+
+    const design = designs[currentDesign];
+    selectedLabel.textContent = design.label;
+    preview.querySelector(".card-small-title").textContent = design.title;
+    preview.querySelector(".card-decoration-top").textContent = design.decorations;
+    preview.querySelector(".card-decoration-bottom").textContent = design.bottom;
+  }
+
+  function openEditor(name) {
+    currentBirthday = String(name || "").trim();
+    currentDesign = "celebration";
+    nameInput.value = currentBirthday;
+    messageInput.value = defaultMessage(currentBirthday);
+    status.textContent = "";
+    document.querySelectorAll(".design-choice").forEach(btn => {
+      const selected = btn.dataset.design === currentDesign;
+      btn.classList.toggle("selected", selected);
+      btn.setAttribute("aria-selected", String(selected));
+    });
+    preview.className = `birthday-card-preview theme-${currentDesign}`;
+    updatePreview();
+    if (hub) hub.hidden = true;
+    editor.hidden = false;
+    editor.scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(() => nameInput.focus(), 250);
+  }
+
+  function close() {
+    editor.hidden = true;
+    if (hub) hub.hidden = false;
+    if (hub) hub.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  nameInput.addEventListener("input", updatePreview);
+  messageInput.addEventListener("input", updatePreview);
+  closeEditor.addEventListener("click", close);
+
+  document.querySelectorAll(".design-choice").forEach(button => {
+    button.addEventListener("click", () => {
+      currentDesign = button.dataset.design;
+      preview.className = `birthday-card-preview theme-${currentDesign}`;
+      document.querySelectorAll(".design-choice").forEach(btn => {
+        const selected = btn === button;
+        btn.classList.toggle("selected", selected);
+        btn.setAttribute("aria-selected", String(selected));
+      });
+      updatePreview();
+    });
+  });
+
+  saveButton.addEventListener("click", () => {
+    const name = nameInput.value.trim() || currentBirthday || "Unbekannt";
+    const card = {
+      id: `card-${Date.now()}`,
+      personName: name,
+      message: messageInput.value.trim() || defaultMessage(name),
+      theme: currentDesign,
+      createdAt: Date.now()
+    };
+    try {
+      const key = "birthdayAssistantCardsV1";
+      const existing = JSON.parse(localStorage.getItem(key) || "[]");
+      existing.unshift(card);
+      localStorage.setItem(key, JSON.stringify(existing.slice(0, 50)));
+      status.textContent = "✅ Karte wurde auf diesem Gerät gespeichert.";
+    } catch (_) {
+      status.textContent = "Die Karte konnte auf diesem Gerät nicht gespeichert werden.";
+    }
+  });
+
+  window.BirthdayAssistantV152 = { openEditor };
+})();
+
 /* V1.5.1 card creation hub */
 
 /* V1.5.1 card creation hub */
@@ -508,7 +628,12 @@ setTimeout(() => {
 
     const option = event.target.closest("[data-creation-method]");
     if (option) {
-      showComingSoon(option.getAttribute("data-creation-method"));
+      const method = option.getAttribute("data-creation-method");
+      if (method === "template" && window.BirthdayAssistantV152) {
+        window.BirthdayAssistantV152.openEditor(selectedBirthday);
+      } else {
+        showComingSoon(method);
+      }
     }
   });
 
@@ -532,44 +657,4 @@ setTimeout(() => {
     },
     showHub
   };
-})();
-
-
-
-/* V1.5.1 reminder-card integration */
-(function () {
-  function enhanceReminderCards() {
-    const api = window.BirthdayAssistantV151;
-    if (!api) return;
-
-    // Prefer explicit reminder/card containers if present.
-    const selectors = [
-      "[data-reminder-card]",
-      ".reminder-card",
-      ".birthday-reminder",
-      ".reminder-item",
-      "#birthdayReminders article",
-      "#birthdayReminders .card"
-    ];
-
-    let cards = [];
-    for (const selector of selectors) {
-      cards = Array.from(document.querySelectorAll(selector));
-      if (cards.length) break;
-    }
-
-    cards.forEach((card) => {
-      if (card.querySelector("[data-birthday-card-create]")) return;
-      const text = card.innerText || "";
-      const match = text.match(/Tomorrow is\s+(.+?)(?:['’]s birthday|!|\n|$)/i);
-      const personName = match ? match[1].trim() : "";
-      api.addButton(card, personName);
-    });
-  }
-
-  enhanceReminderCards();
-  const observer = new MutationObserver(enhanceReminderCards);
-  observer.observe(document.body, { childList: true, subtree: true });
-  setTimeout(enhanceReminderCards, 300);
-  setTimeout(enhanceReminderCards, 1000);
 })();
