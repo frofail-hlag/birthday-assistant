@@ -9,10 +9,10 @@
   <meta name="apple-mobile-web-app-title" content="Birthday Assistant">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=1.5.3.2">
   <title>Birthday Assistant</title>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <!-- Birthday Assistant V1.5.3.1 -->
+  <!-- Birthday Assistant V1.5.3.2 -->
 </head>
 <body>
   <main class="app">
@@ -139,7 +139,7 @@
 
 <section id="cardEditor" class="card-editor-shell" hidden aria-labelledby="cardEditorTitle">
   <div class="editor-topbar">
-    <button type="button" id="closeCardEditor" class="icon-back" aria-label="Back">←</button>
+    <button type="button" id="closeCardEditor" class="icon-back" aria-label="Back"><span aria-hidden="true">←</span></button>
     <div>
       <div class="section-kicker">BIRTHDAY CARDS</div>
       <h2 id="cardEditorTitle">Create Birthday Card</h2>
@@ -201,7 +201,7 @@
 </div>
 
 
-<div class="app-version" aria-label="App version">V1.5.3.1</div>
+<div class="app-version" aria-label="App version">V1.5.3.2</div>
 
 </main>
 
@@ -283,6 +283,6 @@
   };
 </script>
 
-  <script src="app.js?v=1.5.3.1"></script>
+  <script src="app.js?v=1.5.3.2"></script>
 </body>
 </html>

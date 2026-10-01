@@ -685,7 +685,7 @@ setTimeout(() => {
 }, 12000);
 
 
-/* V1.5.2.3 — stable card creator navigation */
+/* V1.5.3.2 — visual theme consistency and header icon polish */
 (function () {
   const hub = document.getElementById("cardCreationHub");
   const editor = document.getElementById("cardEditor");

@@ -761,3 +761,43 @@ body {
   .saved-card-preview-dialog { border-radius: 20px; padding: 10px; }
   .saved-card-full-preview { width: min(100%, 390px); }
 }
+
+
+/* V1.5.3.2 — Theme consistency patch.
+   Keep the visual identity identical across live preview, thumbnails, saved cards and full-screen preview. */
+.birthday-card-preview.theme-celebration,
+.design-swatch.theme-celebration { background-color:#ff8a65 !important; background-image:radial-gradient(circle at 20% 20%, #ff6b8a, transparent 35%), linear-gradient(145deg, #ff6b6b, #ffb347) !important; color:#fff !important; }
+.birthday-card-preview.theme-kids,
+.design-swatch.theme-kids { background-color:#8dd8f8 !important; background-image:radial-gradient(circle at 80% 20%, #ffd6f6, transparent 35%), linear-gradient(145deg, #7dd3fc, #c4b5fd) !important; color:#fff !important; }
+.birthday-card-preview.theme-sports,
+.design-swatch.theme-sports { background-color:#2563eb !important; background-image:radial-gradient(circle at 70% 30%, #60a5fa, transparent 35%), linear-gradient(145deg, #2563eb, #0f766e) !important; color:#fff !important; }
+.birthday-card-preview.theme-elegant,
+.design-swatch.theme-elegant { background-color:#24114f !important; background-image:radial-gradient(circle at 25% 20%, #f5f3ff, transparent 28%), linear-gradient(145deg, #111827, #4c1d95) !important; color:#fff !important; }
+.birthday-card-preview.theme-fun,
+.design-swatch.theme-fun { background-color:#ec4899 !important; background-image:radial-gradient(circle at 25% 25%, #fde68a, transparent 30%), linear-gradient(145deg, #14b8a6, #ec4899) !important; color:#fff !important; }
+.birthday-card-preview.theme-classic,
+.design-swatch.theme-classic { background-color:#9a3412 !important; background-image:radial-gradient(circle at 75% 15%, #fed7aa, transparent 30%), linear-gradient(145deg, #9a3412, #b45309) !important; color:#fff !important; }
+.birthday-card-preview.theme-adventure,
+.design-swatch.theme-adventure { background-color:#14532d !important; background-image:radial-gradient(circle at 78% 18%, #fde68a, transparent 28%), linear-gradient(145deg, #0f766e, #14532d 60%, #0f172a) !important; color:#fff !important; }
+.birthday-card-preview.theme-magical,
+.design-swatch.theme-magical { background-color:#7c3aed !important; background-image:radial-gradient(circle at 18% 18%, #fbcfe8, transparent 30%), linear-gradient(145deg, #7c3aed, #db2777 60%, #2563eb) !important; color:#fff !important; }
+.birthday-card-preview.theme-flowers,
+.design-swatch.theme-flowers { background-color:#166534 !important; background-image:radial-gradient(circle at 22% 18%, #fbcfe8, transparent 32%), linear-gradient(145deg, #166534, #be185d 58%, #f59e0b) !important; color:#fff !important; }
+.birthday-card-preview.theme-gaming,
+.design-swatch.theme-gaming { background-color:#312e81 !important; background-image:radial-gradient(circle at 70% 20%, #22d3ee, transparent 28%), linear-gradient(145deg, #111827, #312e81 58%, #7e22ce) !important; color:#fff !important; }
+.birthday-card-preview.theme-space,
+.design-swatch.theme-space { background-color:#172554 !important; background-image:radial-gradient(circle at 30% 18%, #fef3c7, transparent 18%), linear-gradient(145deg, #020617, #172554 58%, #312e81) !important; color:#fff !important; }
+.birthday-card-preview.theme-rainbow,
+.design-swatch.theme-rainbow { background-color:#8b5cf6 !important; background-image:conic-gradient(from 210deg at 50% 50%, #ef4444, #f59e0b, #eab308, #22c55e, #06b6d4, #3b82f6, #8b5cf6, #ef4444) !important; color:#fff !important; }
+
+/* Make the editor navigation control visibly intentional even if an older style is cached. */
+.card-editor-shell .icon-back,
+.saved-card-preview-toolbar .icon-back {
+  background:#0b1f33 !important;
+  color:#fff !important;
+  border:0 !important;
+  opacity:1 !important;
+}
+.card-editor-shell .icon-back::before { content:"←"; }
+.card-editor-shell .icon-back { font-size:0 !important; }
+.card-editor-shell .icon-back::before { font-size:1.35rem; }
