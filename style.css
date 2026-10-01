@@ -263,26 +263,98 @@ details.diagnostics[open] summary::after { content:"−"; }
 .design-thumb { width:58px; height:58px; border-radius:13px; display:grid; place-items:center; font-size:1.55rem; }
 .editor-status { min-height:20px; font-size:.86rem; text-align:center; opacity:.8; }
 .editor-save { width:100%; }
-.theme-celebration { color:#fff; background:radial-gradient(circle at 20% 20%, #ffb4b4, transparent 28%), radial-gradient(circle at 85% 18%, #ffd76b, transparent 25%), linear-gradient(145deg,#ff5f6d,#ffc371); }
-.theme-kids { color:#26324a; background:radial-gradient(circle at 20% 20%, #fff, transparent 20%), radial-gradient(circle at 80% 70%, #fff, transparent 22%), linear-gradient(145deg,#a8edea,#fed6e3); }
-.theme-sports { color:#fff; background:radial-gradient(circle at 80% 20%, #fff, transparent 14%), linear-gradient(145deg,#0f4c81,#3f8cff); }
-.theme-elegant { color:#fff; background:radial-gradient(circle at 50% 0%, rgba(255,255,255,.28), transparent 30%), linear-gradient(145deg,#202020,#6b5b73); }
-.theme-fun { color:#253047; background:radial-gradient(circle at 15% 20%, #ffe66d, transparent 22%), radial-gradient(circle at 85% 25%, #ff8fab, transparent 22%), linear-gradient(145deg,#7bdff2,#b2f7ef); }
-.theme-classic { color:#fff; background:linear-gradient(145deg,#8f1d3f,#d9a441); }
-.design-thumb.theme-elegant, .design-thumb.theme-classic, .design-thumb.theme-sports, .design-thumb.theme-celebration { color:#fff; }
-@media (min-width:760px) {
-  .editor-layout { grid-template-columns:minmax(340px, 1.05fr) minmax(300px, .95fr); align-items:start; }
-  .design-choices { grid-template-columns:repeat(3,1fr); }
+.card-theme-watermark {
+  position: absolute;
+  right: -10%;
+  bottom: 8%;
+  font-size: clamp(5rem, 18vw, 10rem);
+  line-height: 1;
+  opacity: .10;
+  transform: rotate(-12deg);
+  pointer-events: none;
 }
 
-/* V1.5.2.1 futuristic card editor */
+.theme-celebration { background: radial-gradient(circle at 20% 20%, #ff6b8a, transparent 35%), linear-gradient(145deg, #ff6b6b, #ffb347); }
+.theme-kids { background: radial-gradient(circle at 80% 20%, #ffd6f6, transparent 35%), linear-gradient(145deg, #7dd3fc, #c4b5fd); }
+.theme-sports { background: radial-gradient(circle at 70% 30%, #60a5fa, transparent 35%), linear-gradient(145deg, #2563eb, #0f766e); }
+.theme-elegant { background: radial-gradient(circle at 25% 20%, #f5f3ff, transparent 28%), linear-gradient(145deg, #111827, #4c1d95); }
+.theme-fun { background: radial-gradient(circle at 25% 25%, #fde68a, transparent 30%), linear-gradient(145deg, #14b8a6, #ec4899); }
+.theme-classic { background: radial-gradient(circle at 75% 15%, #fed7aa, transparent 30%), linear-gradient(145deg, #9a3412, #b45309); }
+.theme-adventure { background: radial-gradient(circle at 78% 18%, #fde68a, transparent 28%), linear-gradient(145deg, #0f766e, #14532d 60%, #0f172a); }
+.theme-magical { background: radial-gradient(circle at 18% 18%, #fbcfe8, transparent 30%), linear-gradient(145deg, #7c3aed, #db2777 60%, #2563eb); }
+.theme-flowers { background: radial-gradient(circle at 22% 18%, #fbcfe8, transparent 32%), linear-gradient(145deg, #166534, #be185d 58%, #f59e0b); }
+.theme-gaming { background: radial-gradient(circle at 70% 20%, #22d3ee, transparent 28%), linear-gradient(145deg, #111827, #312e81 58%, #7e22ce); }
+.theme-space { background: radial-gradient(circle at 30% 18%, #fef3c7, transparent 18%), linear-gradient(145deg, #020617, #172554 58%, #312e81); }
+.theme-rainbow { background: conic-gradient(from 210deg at 50% 50%, #ef4444, #f59e0b, #eab308, #22c55e, #06b6d4, #3b82f6, #8b5cf6, #ef4444); }
+
+/* Mini design previews: show the actual theme, not just a colored square. */
+.design-swatch {
+  width: 100%;
+  height: 100%;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  position: relative;
+  color: white;
+  padding: 7px;
+  isolation: isolate;
+}
+.design-swatch::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 72% 24%, rgba(255,255,255,.28), transparent 28%);
+  border-radius: inherit;
+  z-index: -1;
+}
+.design-swatch-pattern {
+  position: absolute;
+  top: 8px;
+  left: 6px;
+  right: 6px;
+  font-size: .65rem;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: .9;
+}
+.design-swatch > strong { font-size: 1.7rem; margin-top: 4px; }
+.design-swatch-name {
+  position: absolute;
+  left: 7px;
+  right: 7px;
+  bottom: 6px;
+  font-size: .55rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 4px rgba(0,0,0,.35);
+}
+
+@media (min-width: 720px) {
+  .editor-layout {
+    grid-template-columns: minmax(300px, 1.05fr) minmax(300px, .95fr);
+    align-items: start;
+  }
+
+  .card-preview-panel {
+    position: sticky;
+    top: 16px;
+  }
+
+  .birthday-card-preview {
+    width: min(100%, 430px);
+  }
+}
+
+/* V1.5.3.1 — editor shell and navigation polish */
 .card-editor-shell {
   margin-top: 18px;
-  padding: clamp(16px, 3vw, 26px);
+  padding: 18px;
   border-radius: 28px;
   background:
-    radial-gradient(circle at 15% 10%, rgba(94, 234, 212, .16), transparent 28%),
-    radial-gradient(circle at 85% 15%, rgba(129, 140, 248, .16), transparent 30%),
+    radial-gradient(circle at 15% 10%, rgba(94, 234, 212, .10), transparent 24%),
+    radial-gradient(circle at 85% 12%, rgba(129, 140, 248, .16), transparent 30%),
     linear-gradient(145deg, #f8fbff 0%, #eef3f9 52%, #f9fbff 100%);
   border: 1px solid rgba(20, 35, 55, .08);
   box-shadow: 0 22px 55px rgba(15, 30, 55, .12);
@@ -306,6 +378,23 @@ details.diagnostics[open] summary::after { content:"−"; }
   font-size: clamp(1.25rem, 4vw, 1.65rem);
 }
 
+.icon-back {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 14px;
+  background: #0b1f33;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 1.35rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(20,35,55,.14);
+}
+
+.icon-back:hover { background: #123b5a; }
+
 .editor-badge {
   width: 42px;
   height: 42px;
@@ -314,237 +403,6 @@ details.diagnostics[open] summary::after { content:"−"; }
   border-radius: 14px;
   background: rgba(255,255,255,.82);
   box-shadow: 0 8px 18px rgba(20,35,55,.08);
-}
-
-.icon-back {
-  width: 42px;
-  height: 42px;
-  border: 0;
-  border-radius: 14px;
-  background: rgba(255,255,255,.86);
-  font-size: 1.35rem;
-  cursor: pointer;
-  box-shadow: 0 8px 18px rgba(20,35,55,.08);
-}
-
-.editor-layout {
-  display: grid;
-  gap: 18px;
-  min-width: 0;
-}
-
-.card-preview-panel,
-.editor-controls {
-  min-width: 0;
-  border-radius: 22px;
-  background: rgba(255,255,255,.78);
-  border: 1px solid rgba(20,35,55,.07);
-  box-shadow: 0 10px 30px rgba(20,35,55,.07);
-}
-
-.card-preview-panel {
-  padding: 14px;
-}
-
-.preview-label,
-.field-label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-}
-
-.preview-label {
-  margin: 2px 4px 10px;
-  font-size: .68rem;
-  font-weight: 800;
-  letter-spacing: .12em;
-  opacity: .52;
-}
-
-.birthday-card-preview {
-  width: min(100%, 430px);
-  aspect-ratio: 4 / 5;
-  margin: 0 auto;
-  padding: clamp(24px, 6vw, 42px);
-  border-radius: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  text-align: center;
-  overflow: hidden;
-  position: relative;
-  color: white;
-  box-shadow: 0 20px 45px rgba(15, 25, 45, .20);
-}
-
-.card-eyebrow {
-  font-size: clamp(.65rem, 2vw, .8rem);
-  font-weight: 900;
-  letter-spacing: .22em;
-}
-
-.preview-name {
-  width: 100%;
-  font-size: clamp(2rem, 8vw, 4.2rem);
-  font-weight: 900;
-  line-height: .95;
-  overflow-wrap: anywhere;
-}
-
-.preview-message {
-  width: 100%;
-  max-width: 340px;
-  font-size: clamp(.9rem, 2.8vw, 1.12rem);
-  line-height: 1.42;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-}
-
-.card-decoration {
-  flex: 0 0 auto;
-  font-size: clamp(1.15rem, 4vw, 1.8rem);
-}
-
-.editor-controls {
-  padding: 16px;
-}
-
-.editor-field {
-  margin-bottom: 16px;
-}
-
-.editor-field label,
-.field-label {
-  display: block;
-  font-size: .84rem;
-  font-weight: 800;
-  margin-bottom: 7px;
-}
-
-.field-label-row span:last-child {
-  font-size: .72rem;
-  opacity: .5;
-}
-
-.editor-field input,
-.editor-field textarea {
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  border: 1px solid rgba(20,35,55,.12);
-  border-radius: 14px;
-  background: rgba(255,255,255,.95);
-  padding: 12px 13px;
-  font: inherit;
-  color: inherit;
-  outline: none;
-  resize: vertical;
-}
-
-.editor-field input:focus,
-.editor-field textarea:focus {
-  border-color: rgba(45, 80, 130, .45);
-  box-shadow: 0 0 0 4px rgba(45, 80, 130, .08);
-}
-
-.design-section {
-  margin-bottom: 16px;
-}
-
-.design-options {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.design-option {
-  min-width: 0;
-  aspect-ratio: 1 / 1;
-  border-radius: 16px;
-  border: 2px solid transparent;
-  padding: 7px;
-  background: rgba(255,255,255,.94);
-  cursor: pointer;
-  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
-}
-
-.design-option:hover,
-.design-option:focus-visible {
-  transform: translateY(-2px);
-  outline: none;
-}
-
-.design-option.selected {
-  border-color: rgba(10, 32, 52, .9);
-  box-shadow: 0 8px 18px rgba(10,32,52,.14);
-}
-
-.design-swatch {
-  width: 100%;
-  height: 100%;
-  border-radius: 11px;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  font-size: 1.55rem;
-  overflow: hidden;
-}
-
-.design-option-name {
-  display: none;
-}
-
-.editor-actions {
-  display: grid;
-  gap: 10px;
-}
-
-.editor-actions button {
-  width: 100%;
-}
-
-.theme-celebration {
-  background: radial-gradient(circle at 20% 20%, #ff6b8a, transparent 35%),
-              linear-gradient(145deg, #ff6b6b, #ffb347);
-}
-.theme-kids {
-  background: radial-gradient(circle at 80% 20%, #ffd6f6, transparent 35%),
-              linear-gradient(145deg, #7dd3fc, #c4b5fd);
-}
-.theme-sports {
-  background: radial-gradient(circle at 70% 30%, #60a5fa, transparent 35%),
-              linear-gradient(145deg, #2563eb, #0f766e);
-}
-.theme-elegant {
-  background: radial-gradient(circle at 25% 20%, #f5f3ff, transparent 28%),
-              linear-gradient(145deg, #111827, #4c1d95);
-}
-.theme-fun {
-  background: radial-gradient(circle at 25% 25%, #fde68a, transparent 30%),
-              linear-gradient(145deg, #14b8a6, #ec4899);
-}
-.theme-classic {
-  background: radial-gradient(circle at 75% 15%, #fed7aa, transparent 30%),
-              linear-gradient(145deg, #9a3412, #b45309);
-}
-
-@media (min-width: 720px) {
-  .editor-layout {
-    grid-template-columns: minmax(300px, 1.05fr) minmax(300px, .95fr);
-    align-items: start;
-  }
-
-  .card-preview-panel {
-    position: sticky;
-    top: 16px;
-  }
-
-  .birthday-card-preview {
-    width: min(100%, 430px);
-  }
 }
 
 /* V1.5.2.2 — energetic dashboard + responsive polish */
@@ -717,6 +575,34 @@ body {
   background: rgba(11,31,51,.12);
 }
 
+.modal-open { overflow: hidden; }
+
+.saved-card-preview-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+}
+.saved-card-preview-modal[hidden] { display: none !important; }
+.saved-card-preview-backdrop { position:absolute; inset:0; background: rgba(5,14,25,.72); backdrop-filter: blur(10px); }
+.saved-card-preview-dialog {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: calc(100vh - 28px);
+  overflow: auto;
+  padding: 14px;
+  border-radius: 24px;
+  background: rgba(248,251,255,.98);
+  box-shadow: 0 30px 90px rgba(0,0,0,.30);
+}
+.saved-card-preview-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.saved-card-preview-toolbar .icon-back { flex:0 0 auto; }
+.saved-card-full-preview-wrap { display:grid; place-items:center; }
+.saved-card-full-preview { width: min(100%, 520px); }
+.saved-card-preview-actions { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:12px; }
+
 .app-version {
   grid-column: 1 / -1;
   text-align: center;
@@ -727,6 +613,48 @@ body {
   padding-top: 2px;
 }
 
+
+/* V1.5.3.1 — Collapsible My Cards + themed previews */
+.my-cards-card {
+  overflow: hidden;
+}
+
+.my-cards-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.my-cards-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.my-cards-heading > span:first-child { font-size: 1.35rem; }
+.my-cards-heading strong { display: block; font-size: 1.05rem; }
+.my-cards-heading small { display: block; margin-top: 3px; font-size: .72rem; opacity: .55; }
+.my-cards-toggle-right { display:flex; align-items:center; gap:8px; flex:0 0 auto; }
+.my-cards-chevron {
+  width: 30px; height: 30px; border-radius: 10px;
+  display:grid; place-items:center;
+  background: rgba(11,31,51,.07);
+  font-size: 1.05rem;
+  transition: transform .18s ease;
+}
+.my-cards-card:not(.collapsed) .my-cards-chevron { transform: rotate(180deg); }
+.my-cards-content { margin-top: 14px; }
+.my-cards-card.collapsed .my-cards-content { display: none; }
+.my-cards-toggle:focus-visible { outline: 3px solid rgba(45,80,130,.20); outline-offset: 5px; border-radius: 12px; }
 
 /* V1.5.3 — My Cards library */
 .my-cards-card {
@@ -797,9 +725,12 @@ body {
 
 .saved-card-actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 7px;
 }
+
+.saved-card-preview { cursor: pointer; }
+.saved-card-preview:focus-visible { outline: 3px solid rgba(45,80,130,.30); outline-offset: 3px; }
 
 .saved-card-actions button {
   min-width: 0;
@@ -823,4 +754,10 @@ body {
   .saved-cards-grid {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 560px) {
+  .saved-card-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .saved-card-preview-dialog { border-radius: 20px; padding: 10px; }
+  .saved-card-full-preview { width: min(100%, 390px); }
 }

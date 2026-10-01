@@ -9,12 +9,17 @@ const reminderCount = $("reminderCount");
 const savedCardsList = $("savedCardsList");
 const noSavedCards = $("noSavedCards");
 const savedCardCount = $("savedCardCount");
+const myCardsCard = $("myCardsCard");
+const myCardsToggle = $("myCardsToggle");
+const myCardsContent = $("myCardsContent");
 
 const CARDS_KEY = "birthdayAssistantCardsV1";
 
 const PUSH_SETUP_KEY = "birthdayAssistantPushSetupCompleted";
 const REMINDERS_KEY = "birthdayAssistantRemindersV1";
 const REMINDER_TTL_MS = 24 * 60 * 60 * 1000;
+
+initMyCardsToggle();
 
 function setStatus(text) {
   pushStatus.textContent = text;
@@ -163,6 +168,30 @@ function renderReminders(reminders = cleanupExpiredReminders()) {
   });
 }
 
+function setMyCardsExpanded(expanded, { scroll = false } = {}) {
+  if (!myCardsCard || !myCardsToggle || !myCardsContent) return;
+  myCardsCard.classList.toggle("collapsed", !expanded);
+  myCardsToggle.setAttribute("aria-expanded", String(expanded));
+  myCardsContent.hidden = !expanded;
+  try { localStorage.setItem("birthdayAssistantMyCardsExpandedV1", expanded ? "true" : "false"); } catch (_) {}
+  if (scroll && expanded) myCardsCard.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function initMyCardsToggle() {
+  if (!myCardsToggle) return;
+  let expanded = false;
+  try { expanded = localStorage.getItem("birthdayAssistantMyCardsExpandedV1") === "true"; } catch (_) {}
+  setMyCardsExpanded(expanded);
+  myCardsToggle.addEventListener("click", () => {
+    const next = myCardsToggle.getAttribute("aria-expanded") !== "true";
+    setMyCardsExpanded(next);
+  });
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeCardPreview();
+});
+
 function readSavedCards() {
   try {
     const raw = localStorage.getItem(CARDS_KEY);
@@ -194,7 +223,7 @@ function formatSavedCardDate(timestamp) {
 }
 
 function cardDesignById(id) {
-  const fallback = { id: "celebration", name: "Celebration", emoji: "🎉", className: "theme-celebration" };
+  const fallback = { id: "celebration", name: "Celebration", emoji: "🎉", className: "theme-celebration", top: "🎈　🎈　🎈", bottom: "🎂　🎁　🎉", watermark: "🎉" };
   const designs = window.BirthdayCardDesigns || [];
   return designs.find(d => d.id === id) || fallback;
 }
@@ -216,14 +245,25 @@ function renderSavedCards() {
     const preview = document.createElement("div");
     preview.className = "saved-card-preview birthday-card-preview " + design.className;
     preview.innerHTML = `
-      <div class="card-decoration card-decoration-top">🎈　🎈　🎈</div>
+      <div class="card-theme-watermark" aria-hidden="true"></div>
+      <div class="card-decoration card-decoration-top"></div>
       <div class="card-eyebrow">HAPPY BIRTHDAY</div>
       <div class="preview-name"></div>
       <div class="preview-message"></div>
-      <div class="card-decoration card-decoration-bottom">🎂　🎁　🎉</div>
+      <div class="card-decoration card-decoration-bottom"></div>
     `;
     preview.querySelector(".preview-name").textContent = `${card.personName || "Birthday"}!`;
     preview.querySelector(".preview-message").textContent = card.message || "";
+    preview.querySelector(".card-decoration-top").textContent = design.top || design.emoji;
+    preview.querySelector(".card-decoration-bottom").textContent = design.bottom || design.emoji;
+    preview.querySelector(".card-theme-watermark").textContent = design.watermark || design.emoji;
+    preview.setAttribute("role", "button");
+    preview.setAttribute("tabindex", "0");
+    preview.setAttribute("aria-label", `Open ${card.personName || "birthday"} card full screen`);
+    preview.addEventListener("click", () => openCardPreview(card));
+    preview.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openCardPreview(card); }
+    });
 
     const meta = document.createElement("div");
     meta.className = "saved-card-meta";
@@ -232,6 +272,12 @@ function renderSavedCards() {
 
     const actions = document.createElement("div");
     actions.className = "saved-card-actions";
+
+    const previewButton = document.createElement("button");
+    previewButton.type = "button";
+    previewButton.className = "secondary-action";
+    previewButton.textContent = "👁️ Preview";
+    previewButton.addEventListener("click", () => openCardPreview(card));
 
     const openButton = document.createElement("button");
     openButton.type = "button";
@@ -255,17 +301,82 @@ function renderSavedCards() {
       renderSavedCards();
     });
 
-    actions.append(openButton, shareButton, deleteButton);
+    actions.append(previewButton, openButton, shareButton, deleteButton);
     article.append(preview, meta, actions);
     savedCardsList.appendChild(article);
   });
+}
+
+function openCardPreview(card) {
+  const design = cardDesignById(card.theme);
+  let modal = document.getElementById("savedCardPreviewModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "savedCardPreviewModal";
+    modal.className = "saved-card-preview-modal";
+    modal.hidden = true;
+    modal.innerHTML = `
+      <div class="saved-card-preview-backdrop" data-close-card-preview></div>
+      <div class="saved-card-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="savedCardPreviewTitle">
+        <div class="saved-card-preview-toolbar">
+          <strong id="savedCardPreviewTitle">Birthday Card</strong>
+          <button type="button" class="icon-back" data-close-card-preview aria-label="Close preview">✕</button>
+        </div>
+        <div class="saved-card-full-preview-wrap">
+          <div id="savedCardFullPreview" class="birthday-card-preview saved-card-full-preview"></div>
+        </div>
+        <div class="saved-card-preview-actions">
+          <button type="button" id="savedCardPreviewShare" class="primary-action">📤 Share</button>
+          <button type="button" id="savedCardPreviewEdit" class="secondary-action">✏️ Edit</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener("click", (event) => {
+      if (event.target.closest("[data-close-card-preview]")) closeCardPreview();
+    });
+    document.getElementById("savedCardPreviewShare")?.addEventListener("click", async () => {
+      const current = modal.__card;
+      if (current) await shareSavedCard(current);
+    });
+    document.getElementById("savedCardPreviewEdit")?.addEventListener("click", () => {
+      const current = modal.__card;
+      closeCardPreview();
+      if (current) window.BirthdayAssistantV151?.openSavedCard?.(current.id);
+    });
+  }
+  modal.__card = card;
+  const full = document.getElementById("savedCardFullPreview");
+  const title = document.getElementById("savedCardPreviewTitle");
+  title.textContent = `${card.personName || "Birthday"} · ${design.name}`;
+  full.className = `birthday-card-preview saved-card-full-preview ${design.className}`;
+  full.innerHTML = `
+    <div class="card-theme-watermark" aria-hidden="true">${design.watermark || design.emoji}</div>
+    <div class="card-decoration card-decoration-top">${design.top || design.emoji}</div>
+    <div class="card-eyebrow">HAPPY BIRTHDAY</div>
+    <div class="preview-name"></div>
+    <div class="preview-message"></div>
+    <div class="card-decoration card-decoration-bottom">${design.bottom || design.emoji}</div>`;
+  full.querySelector(".preview-name").textContent = `${card.personName || "Birthday"}!`;
+  full.querySelector(".preview-message").textContent = card.message || "";
+  modal.hidden = false;
+  document.body.classList.add("modal-open");
+}
+
+function closeCardPreview() {
+  const modal = document.getElementById("savedCardPreviewModal");
+  if (modal) modal.hidden = true;
+  document.body.classList.remove("modal-open");
 }
 
 async function shareSavedCard(card) {
   const text = `🎂 Birthday card for ${card.personName || "Birthday"}!\n\n${card.message || ""}`;
   try {
     if (navigator.share) {
-      await navigator.share({ title: `🎂 Birthday Card – ${card.personName || "Birthday"}`, text });
+      await navigator.share({
+        title: `🎂 Birthday Card – ${card.personName || "Birthday"}`,
+        text,
+        url: window.location.origin + window.location.pathname
+      });
       return;
     }
     await navigator.clipboard.writeText(text);
@@ -593,18 +704,18 @@ setTimeout(() => {
   const closeHub = document.getElementById("closeCardCreationHub");
 
   const designs = [
-    { id: "celebration", name: "Celebration", emoji: "🎉", className: "theme-celebration" },
-    { id: "kids", name: "Kids", emoji: "🧸", className: "theme-kids" },
-    { id: "sports", name: "Sports", emoji: "⚽", className: "theme-sports" },
-    { id: "elegant", name: "Elegant", emoji: "✨", className: "theme-elegant" },
-    { id: "fun", name: "Fun", emoji: "😄", className: "theme-fun" },
-    { id: "classic", name: "Classic", emoji: "🎂", className: "theme-classic" },
-    { id: "adventure", name: "Adventure", emoji: "🚀", className: "theme-sports" },
-    { id: "unicorn", name: "Magical", emoji: "🦄", className: "theme-kids" },
-    { id: "flowers", name: "Flowers", emoji: "🌸", className: "theme-elegant" },
-    { id: "gaming", name: "Gaming", emoji: "🎮", className: "theme-sports" },
-    { id: "space", name: "Space", emoji: "🌌", className: "theme-elegant" },
-    { id: "rainbow", name: "Rainbow", emoji: "🌈", className: "theme-fun" }
+    { id: "celebration", name: "Celebration", emoji: "🎉", className: "theme-celebration", top: "🎈　🎈　🎈", bottom: "🎂　🎁　🎉", watermark: "🎉" },
+    { id: "kids", name: "Kids", emoji: "🧸", className: "theme-kids", top: "🧸　🎈　🧸", bottom: "🧸　⭐　🎈", watermark: "🧸" },
+    { id: "sports", name: "Sports", emoji: "⚽", className: "theme-sports", top: "⚽　🏆　⚽", bottom: "🏆　⚽　🏆", watermark: "⚽" },
+    { id: "elegant", name: "Elegant", emoji: "✨", className: "theme-elegant", top: "✦　✧　✦", bottom: "✧　✦　✧", watermark: "✦" },
+    { id: "fun", name: "Fun", emoji: "😄", className: "theme-fun", top: "😄　🎈　🤩", bottom: "🎉　😄　🎊", watermark: "😄" },
+    { id: "classic", name: "Classic", emoji: "🎂", className: "theme-classic", top: "🕯️　🎂　🕯️", bottom: "🎂　🎁　🎂", watermark: "🎂" },
+    { id: "adventure", name: "Adventure", emoji: "🚀", className: "theme-adventure", top: "🚀　🗺️　🧭", bottom: "🧭　🏔️　🚀", watermark: "🚀" },
+    { id: "unicorn", name: "Magical", emoji: "🦄", className: "theme-magical", top: "🦄　✨　🌈", bottom: "🌈　🦄　✨", watermark: "🦄" },
+    { id: "flowers", name: "Flowers", emoji: "🌸", className: "theme-flowers", top: "🌸　🌷　🌸", bottom: "🌺　🌸　🌷", watermark: "🌸" },
+    { id: "gaming", name: "Gaming", emoji: "🎮", className: "theme-gaming", top: "🎮　🕹️　🎮", bottom: "🕹️　🎮　🏆", watermark: "🎮" },
+    { id: "space", name: "Space", emoji: "🌌", className: "theme-space", top: "🚀　🪐　🌙", bottom: "⭐　🪐　🚀", watermark: "🪐" },
+    { id: "rainbow", name: "Rainbow", emoji: "🌈", className: "theme-rainbow", top: "🌈　☀️　🌈", bottom: "🌈　⭐　🌈", watermark: "🌈" }
   ];
 
   window.BirthdayCardDesigns = designs;
@@ -657,7 +768,7 @@ setTimeout(() => {
 
       const swatch = document.createElement("span");
       swatch.className = "design-swatch " + design.className;
-      swatch.textContent = design.emoji;
+      swatch.innerHTML = `<span class="design-swatch-pattern">${design.top || design.emoji}</span><strong>${design.emoji}</strong><span class="design-swatch-name">${design.name}</span>`;
 
       const label = document.createElement("span");
       label.className = "design-option-name";
@@ -677,6 +788,12 @@ setTimeout(() => {
   function applyDesign() {
     if (preview && activeDesign) {
       preview.className = "birthday-card-preview " + activeDesign.className;
+      const top = preview.querySelector(".card-decoration-top");
+      const bottom = preview.querySelector(".card-decoration-bottom");
+      const watermark = preview.querySelector(".card-theme-watermark");
+      if (top) top.textContent = activeDesign.top || activeDesign.emoji;
+      if (bottom) bottom.textContent = activeDesign.bottom || activeDesign.emoji;
+      if (watermark) watermark.textContent = activeDesign.watermark || activeDesign.emoji;
     }
   }
 
@@ -804,7 +921,7 @@ setTimeout(() => {
       setTimeout(() => {
         saveButton.textContent = original;
         editor.hidden = true;
-        document.getElementById("myCardsCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        setMyCardsExpanded(true, { scroll: true });
       }, 550);
     });
   }

@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="style.css">
   <title>Birthday Assistant</title>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <!-- Birthday Assistant V1.5.3 -->
+  <!-- Birthday Assistant V1.5.3.1 -->
 </head>
 <body>
   <main class="app">
@@ -39,22 +39,30 @@
     </section>
 
 
-    <section class="card dashboard-wide my-cards-card" id="myCardsCard">
-      <div class="section-heading">
-        <div>
-          <h2>🖼️ My Cards</h2>
-          <p class="section-subtitle">Your saved birthday cards stay here until you delete them.</p>
+    <section class="card dashboard-wide my-cards-card collapsed" id="myCardsCard">
+      <button type="button" class="my-cards-toggle" id="myCardsToggle" aria-expanded="false" aria-controls="myCardsContent">
+        <span class="my-cards-heading">
+          <span>🖼️</span>
+          <span>
+            <strong>My Cards</strong>
+            <small>Your saved birthday cards stay here until you delete them.</small>
+          </span>
+        </span>
+        <span class="my-cards-toggle-right">
+          <span id="savedCardCount" class="count-badge">0</span>
+          <span class="my-cards-chevron" aria-hidden="true">⌄</span>
+        </span>
+      </button>
+      <div id="myCardsContent" class="my-cards-content" hidden>
+        <div id="savedCardsList" class="saved-cards-grid"></div>
+        <div id="noSavedCards" class="empty-state">
+          <div class="empty-icon">🖼️</div>
+          <strong>No saved cards yet</strong>
+          <span>Create a card from a birthday reminder and save it here.</span>
         </div>
-        <span id="savedCardCount" class="count-badge">0</span>
-      </div>
-      <div id="savedCardsList" class="saved-cards-grid"></div>
-      <div id="noSavedCards" class="empty-state">
-        <div class="empty-icon">🖼️</div>
-        <strong>No saved cards yet</strong>
-        <span>Create a card from a birthday reminder and save it here.</span>
-      </div>
-      <div class="my-cards-actions">
-        <button type="button" id="createNewCardFromLibrary" class="primary-action">＋ Create New Card</button>
+        <div class="my-cards-actions">
+          <button type="button" id="createNewCardFromLibrary" class="primary-action">＋ Create New Card</button>
+        </div>
       </div>
     </section>
 
@@ -86,7 +94,7 @@
       <p>Choose a birthday reminder above to create a personalized card.</p>
     </section>
   
-<section id="cardCreationHub" class="card-creation-hub" hidden aria-labelledby="cardCreationTitle" hidden hidden>
+<section id="cardCreationHub" class="card-creation-hub" hidden aria-labelledby="cardCreationTitle">
   <div class="section-header">
     <div>
       <div class="section-kicker">Birthday Cards</div>
@@ -129,20 +137,21 @@
 
 
 
-<section id="cardEditor" class="card-editor-shell" hidden aria-labelledby="cardEditorTitle" hidden hidden>
+<section id="cardEditor" class="card-editor-shell" hidden aria-labelledby="cardEditorTitle">
   <div class="editor-topbar">
     <button type="button" id="closeCardEditor" class="icon-back" aria-label="Back">←</button>
     <div>
       <div class="section-kicker">BIRTHDAY CARDS</div>
       <h2 id="cardEditorTitle">Create Birthday Card</h2>
     </div>
-    <div class="editor-badge">🎂</div>
+    <div class="editor-badge" aria-hidden="true">🎂</div>
   </div>
 
   <div class="editor-layout">
     <div class="card-preview-panel">
       <div class="preview-label">LIVE PREVIEW</div>
       <div id="birthdayCardPreview" class="birthday-card-preview theme-celebration">
+        <div class="card-theme-watermark" aria-hidden="true">🎉</div>
         <div class="card-decoration card-decoration-top">🎈　🎈　🎈</div>
         <div class="card-eyebrow">HAPPY BIRTHDAY</div>
         <div id="previewName" class="preview-name">Birthday!</div>
@@ -192,7 +201,7 @@
 </div>
 
 
-<div class="app-version" aria-label="App version">V1.5.3</div>
+<div class="app-version" aria-label="App version">V1.5.3.1</div>
 
 </main>
 
@@ -274,6 +283,6 @@
   };
 </script>
 
-  <script src="app.js?v=1.5.3"></script>
+  <script src="app.js?v=1.5.3.1"></script>
 </body>
 </html>
