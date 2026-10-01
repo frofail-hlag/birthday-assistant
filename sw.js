@@ -1,4 +1,4 @@
-const CACHE_NAME = "birthday-assistant-v1-5-2-3";
+const CACHE_NAME = "birthday-assistant-v1-5-2-4";
 const APP_SHELL = [
   "/birthday-assistant/",
   "/birthday-assistant/index.html",
@@ -29,6 +29,30 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
+
+  const url = new URL(event.request.url);
+  const isAppShell =
+    url.pathname === "/birthday-assistant/" ||
+    url.pathname === "/birthday-assistant/index.html" ||
+    url.pathname === "/birthday-assistant/app.js" ||
+    url.pathname === "/birthday-assistant/style.css" ||
+    url.pathname === "/birthday-assistant/manifest.json";
+
+  if (isAppShell) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response && response.status === 200) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;

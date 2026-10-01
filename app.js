@@ -148,6 +148,10 @@ function renderReminders(reminders = cleanupExpiredReminders()) {
     createButton.className = "primary-action create-birthday-card-button";
     createButton.textContent = "🎨 Create Birthday Card";
     createButton.setAttribute("data-birthday-card-create", reminder.name);
+    createButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      if (window.BirthdayCardUI) window.BirthdayCardUI.openHub(reminder.name);
+    });
 
     article.append(icon, content, createButton);
     remindersList.appendChild(article);
@@ -574,7 +578,8 @@ setTimeout(() => {
     hub.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function openEditor() {
+  function openEditor(nameOverride) {
+    if (nameOverride) currentBirthdayName = nameOverride;
     const name = currentBirthdayName || "Birthday";
     nameInput.value = name;
     messageInput.value = defaultMessage(name);
@@ -677,6 +682,8 @@ setTimeout(() => {
   }
 
   // Expose a clean API for the reminder renderer.
+  window.updateBirthdayCardPreview = updatePreview;
   window.BirthdayAssistantV151 = window.BirthdayAssistantV151 || {};
   window.BirthdayAssistantV151.showHub = showHub;
+  window.BirthdayAssistantV151.openEditor = openEditor;
 })();

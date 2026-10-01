@@ -76,7 +76,7 @@
   </div>
 
   <div class="card-creation-options">
-    <button type="button" class="creation-option" data-creation-method="template">
+    <button type="button" class="creation-option" data-creation-method="template" onclick="BirthdayCardUI.openEditor()">
       <span class="creation-option-icon">🎨</span>
       <span class="creation-option-content">
         <strong>Create a Card</strong>
@@ -104,7 +104,7 @@
     </button>
   </div>
 
-  <button type="button" id="closeCardCreationHub" class="secondary-action card-hub-back">← Back to Birthday Reminders</button>
+  <button type="button" id="closeCardCreationHub" class="secondary-action card-hub-back" onclick="BirthdayCardUI.closeHub()">← Back to Birthday Reminders</button>
 </section>
 
 
@@ -171,6 +171,9 @@
   </div>
 </div>
 
+
+<div class="app-version" aria-label="App version">V1.5.2.4</div>
+
 </main>
 
   <script>
@@ -207,6 +210,50 @@
     });
   </script>
 
-  <script src="app.js"></script>
+  
+<script>
+  window.BirthdayCardUI = {
+    currentName: "",
+    openHub: function(name) {
+      this.currentName = name || "Birthday";
+      var hub = document.getElementById("cardCreationHub");
+      var editor = document.getElementById("cardEditor");
+      if (editor) editor.hidden = true;
+      if (hub) {
+        hub.hidden = false;
+        hub.scrollIntoView({behavior:"smooth", block:"start"});
+      }
+    },
+    openEditor: function() {
+      var hub = document.getElementById("cardCreationHub");
+      var editor = document.getElementById("cardEditor");
+      if (!editor) return;
+      if (window.BirthdayAssistantV151 && typeof window.BirthdayAssistantV151.openEditor === "function") {
+        window.BirthdayAssistantV151.openEditor(this.currentName || "Birthday");
+        return;
+      }
+      var name = this.currentName || "Birthday";
+      var nameInput = document.getElementById("cardName");
+      var messageInput = document.getElementById("cardMessage");
+      if (nameInput) nameInput.value = name;
+      if (messageInput) messageInput.value =
+        "🎂 Alles Gute zum Geburtstag, " + name + "! Ich wünsche dir einen wunderschönen Tag voller Freude, Glück und schöner Momente! 🎉";
+      if (hub) hub.hidden = true;
+      editor.hidden = false;
+      editor.scrollIntoView({behavior:"smooth", block:"start"});
+      if (typeof window.updateBirthdayCardPreview === "function") window.updateBirthdayCardPreview();
+    },
+    closeHub: function() {
+      var hub = document.getElementById("cardCreationHub");
+      var editor = document.getElementById("cardEditor");
+      if (editor) editor.hidden = true;
+      if (hub) hub.hidden = true;
+      var reminders = document.getElementById("remindersCard");
+      if (reminders) reminders.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+  };
+</script>
+
+  <script src="app.js?v=1.5.2.4"></script>
 </body>
 </html>
