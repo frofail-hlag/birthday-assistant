@@ -453,208 +453,193 @@ setTimeout(() => {
 }, 12000);
 
 
-
-/* V1.5.2 card editor */
+/* V1.5.2.1 — responsive card editor + rotating design sets */
 (function () {
+  const hub = document.getElementById("cardCreationHub");
   const editor = document.getElementById("cardEditor");
-  if (!editor) return;
+  if (!hub || !editor) return;
 
   const preview = document.getElementById("birthdayCardPreview");
-  const nameInput = document.getElementById("cardPersonName");
-  const messageInput = document.getElementById("cardMessage");
   const previewName = document.getElementById("previewName");
   const previewMessage = document.getElementById("previewMessage");
-  const messageCount = document.getElementById("cardMessageCount");
-  const selectedLabel = document.getElementById("selectedDesignLabel");
-  const status = document.getElementById("cardEditorStatus");
+  const nameInput = document.getElementById("cardName");
+  const messageInput = document.getElementById("cardMessage");
+  const counter = document.getElementById("messageCounter");
+  const designOptions = document.getElementById("designOptions");
+  const designSetLabel = document.getElementById("designSetLabel");
   const saveButton = document.getElementById("saveBirthdayCard");
   const closeEditor = document.getElementById("closeCardEditor");
-  const hub = document.getElementById("cardCreationHub");
+  const cancelEditor = document.getElementById("cancelCardEditor");
 
-  const designs = {
-    celebration: { label: "Feier", title: "HAPPY BIRTHDAY", decorations: "🎈 🎈 🎈", bottom: "🎂 🎁 🎉" },
-    kids: { label: "Kinder", title: "HURRA!", decorations: "🌈 🧸 ⭐", bottom: "🎈 🦄 🎁" },
-    sports: { label: "Sport", title: "HAPPY BIRTHDAY", decorations: "⚽ 🏆 ⚽", bottom: "🏀 🎉 🏅" },
-    elegant: { label: "Elegant", title: "HAPPY BIRTHDAY", decorations: "✦ ✨ ✦", bottom: "✧ 🎂 ✧" },
-    fun: { label: "Fröhlich", title: "LET'S CELEBRATE!", decorations: "🥳 🎉 😄", bottom: "🎁 🎈 🥳" },
-    classic: { label: "Klassisch", title: "ALLES GUTE", decorations: "🎂 ✨ 🎂", bottom: "🎁 ❤️ 🎉" }
-  };
+  const designs = [
+    { id: "celebration", name: "Celebration", emoji: "🎉", className: "theme-celebration" },
+    { id: "kids", name: "Kids", emoji: "🧸", className: "theme-kids" },
+    { id: "sports", name: "Sports", emoji: "⚽", className: "theme-sports" },
+    { id: "elegant", name: "Elegant", emoji: "✨", className: "theme-elegant" },
+    { id: "fun", name: "Fun", emoji: "😄", className: "theme-fun" },
+    { id: "classic", name: "Classic", emoji: "🎂", className: "theme-classic" },
+    { id: "adventure", name: "Adventure", emoji: "🚀", className: "theme-sports" },
+    { id: "unicorn", name: "Magical", emoji: "🦄", className: "theme-kids" },
+    { id: "flowers", name: "Flowers", emoji: "🌸", className: "theme-elegant" },
+    { id: "gaming", name: "Gaming", emoji: "🎮", className: "theme-sports" },
+    { id: "space", name: "Space", emoji: "🌌", className: "theme-elegant" },
+    { id: "rainbow", name: "Rainbow", emoji: "🌈", className: "theme-fun" }
+  ];
 
-  let currentDesign = "celebration";
-  let currentBirthday = "";
+  let activeSet = [];
+  let activeDesign = null;
+  let currentBirthdayName = "";
 
-  function defaultMessage(name) {
-    return `🎂 Alles Gute zum Geburtstag, ${name || ""}! Ich wünsche dir einen wunderschönen Tag voller Freude, Glück und schöner Momente! 🎉`.replace("! !", "!").trim();
+  function shuffle(array) {
+    const copy = array.slice();
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function chooseDesignSet() {
+    const key = "birthdayAssistantLastDesignSetV1";
+    const previous = JSON.parse(localStorage.getItem(key) || "[]");
+
+    let candidate = [];
+    for (let attempt = 0; attempt < 12; attempt++) {
+      candidate = shuffle(designs).slice(0, 6);
+      const previousIds = new Set(previous);
+      const overlap = candidate.filter(d => previousIds.has(d.id)).length;
+      if (!previous.length || overlap <= 3) break;
+    }
+
+    activeSet = candidate;
+    activeDesign = activeSet[0];
+    localStorage.setItem(key, JSON.stringify(activeSet.map(d => d.id)));
+
+    renderDesignOptions();
+    applyDesign();
+    designSetLabel.textContent = "New set";
+  }
+
+  function renderDesignOptions() {
+    designOptions.innerHTML = "";
+    activeSet.forEach((design) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "design-option" + (design.id === activeDesign.id ? " selected" : "");
+      button.setAttribute("aria-label", design.name);
+      button.innerHTML =
+        '<span class="design-swatch ' + design.className + '">' + design.emoji + '</span>' +
+        '<span class="design-option-name">' + design.name + '</span>';
+      button.addEventListener("click", () => {
+        activeDesign = design;
+        renderDesignOptions();
+        applyDesign();
+      });
+      designOptions.appendChild(button);
+    });
+  }
+
+  function applyDesign() {
+    preview.className = "birthday-card-preview " + activeDesign.className;
   }
 
   function updatePreview() {
-    const name = nameInput.value.trim() || "Dein Name";
-    const message = messageInput.value.trim() || defaultMessage(name);
-    previewName.textContent = `${name}!`;
+    const name = nameInput.value.trim() || "Birthday!";
+    const message = messageInput.value.trim();
+    previewName.textContent = name + (name === "Birthday!" ? "" : "!");
     previewMessage.textContent = message;
-    messageCount.textContent = `${messageInput.value.length}/220`;
-
-    const design = designs[currentDesign];
-    selectedLabel.textContent = design.label;
-    preview.querySelector(".card-small-title").textContent = design.title;
-    preview.querySelector(".card-decoration-top").textContent = design.decorations;
-    preview.querySelector(".card-decoration-bottom").textContent = design.bottom;
+    counter.textContent = message.length + "/220";
   }
 
-  function openEditor(name) {
-    currentBirthday = String(name || "").trim();
-    currentDesign = "celebration";
-    nameInput.value = currentBirthday;
-    messageInput.value = defaultMessage(currentBirthday);
-    status.textContent = "";
-    document.querySelectorAll(".design-choice").forEach(btn => {
-      const selected = btn.dataset.design === currentDesign;
-      btn.classList.toggle("selected", selected);
-      btn.setAttribute("aria-selected", String(selected));
-    });
-    preview.className = `birthday-card-preview theme-${currentDesign}`;
+  function defaultMessage(name) {
+    return `🎂 Alles Gute zum Geburtstag, ${name}! Ich wünsche dir einen wunderschönen Tag voller Freude, Glück und schöner Momente! 🎉`;
+  }
+
+  function openEditor(personName) {
+    currentBirthdayName = personName || "Birthday";
+    nameInput.value = currentBirthdayName;
+    messageInput.value = defaultMessage(currentBirthdayName);
+    chooseDesignSet();
     updatePreview();
-    if (hub) hub.hidden = true;
+    hub.hidden = true;
     editor.hidden = false;
     editor.scrollIntoView({ behavior: "smooth", block: "start" });
-    setTimeout(() => nameInput.focus(), 250);
   }
 
-  function close() {
+  function closeEditorView() {
     editor.hidden = true;
-    if (hub) hub.hidden = false;
-    if (hub) hub.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
-  nameInput.addEventListener("input", updatePreview);
-  messageInput.addEventListener("input", updatePreview);
-  closeEditor.addEventListener("click", close);
-
-  document.querySelectorAll(".design-choice").forEach(button => {
-    button.addEventListener("click", () => {
-      currentDesign = button.dataset.design;
-      preview.className = `birthday-card-preview theme-${currentDesign}`;
-      document.querySelectorAll(".design-choice").forEach(btn => {
-        const selected = btn === button;
-        btn.classList.toggle("selected", selected);
-        btn.setAttribute("aria-selected", String(selected));
-      });
-      updatePreview();
-    });
-  });
-
-  saveButton.addEventListener("click", () => {
-    const name = nameInput.value.trim() || currentBirthday || "Unbekannt";
-    const card = {
-      id: `card-${Date.now()}`,
-      personName: name,
-      message: messageInput.value.trim() || defaultMessage(name),
-      theme: currentDesign,
-      createdAt: Date.now()
-    };
-    try {
-      const key = "birthdayAssistantCardsV1";
-      const existing = JSON.parse(localStorage.getItem(key) || "[]");
-      existing.unshift(card);
-      localStorage.setItem(key, JSON.stringify(existing.slice(0, 50)));
-      status.textContent = "✅ Karte wurde auf diesem Gerät gespeichert.";
-    } catch (_) {
-      status.textContent = "Die Karte konnte auf diesem Gerät nicht gespeichert werden.";
-    }
-  });
-
-  window.BirthdayAssistantV152 = { openEditor };
-})();
-
-/* V1.5.1 card creation hub */
-
-/* V1.5.1 card creation hub */
-(function () {
-  const hub = document.getElementById("cardCreationHub");
-  const closeHub = document.getElementById("closeCardCreationHub");
-  const dialog = document.getElementById("v151ComingSoon");
-  const closeDialog = document.getElementById("closeV151Dialog");
-  const dialogIcon = document.getElementById("v151DialogIcon");
-  const dialogTitle = document.getElementById("v151ComingSoonTitle");
-  const dialogText = document.getElementById("v151ComingSoonText");
-
-  if (!hub) return;
-
-  let selectedBirthday = null;
-
-  function showHub(birthday) {
-    selectedBirthday = birthday || null;
     hub.hidden = false;
     hub.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function hideHub() {
-    hub.hidden = true;
-  }
-
-  function showComingSoon(method) {
-    const config = {
-      template: {
-        icon: "🎨",
-        title: "Create a Card",
-        text: "The design creator is the next V1.5 step. For now, you can explore the new creation hub safely without changing your V1.4 reminder system."
-      },
-      ai: {
-        icon: "✨",
-        title: "Use AI",
-        text: "The AI card creator is coming in the next V1.5 step. This hub is already prepared for it."
-      },
-      photo: {
-        icon: "📷",
-        title: "Use My Photo",
-        text: "Photo-based cards are coming in a later V1.5 step. Your existing reminders remain unchanged."
-      }
-    }[method];
-
-    if (!config) return;
-    dialogIcon.textContent = config.icon;
-    dialogTitle.textContent = config.title;
-    dialogText.textContent = config.text;
-    dialog.hidden = false;
-  }
-
-  document.addEventListener("click", function (event) {
-    const button = event.target.closest("[data-birthday-card-create]");
-    if (button) {
-      const birthday = button.getAttribute("data-birthday-card-create") || "";
-      showHub(birthday);
+  document.addEventListener("click", (event) => {
+    const createButton = event.target.closest("[data-birthday-card-create]");
+    if (createButton) {
+      const name = createButton.getAttribute("data-birthday-card-create") || "Birthday";
+      openEditorFromReminder(name);
       return;
     }
 
     const option = event.target.closest("[data-creation-method]");
-    if (option) {
-      const method = option.getAttribute("data-creation-method");
-      if (method === "template" && window.BirthdayAssistantV152) {
-        window.BirthdayAssistantV152.openEditor(selectedBirthday);
-      } else {
-        showComingSoon(method);
-      }
+    if (option && option.getAttribute("data-creation-method") === "template") {
+      openEditor(currentBirthdayName || "Birthday");
+      return;
     }
   });
 
-  if (closeHub) closeHub.addEventListener("click", hideHub);
-  if (closeDialog) closeDialog.addEventListener("click", () => { dialog.hidden = true; });
-  if (dialog) dialog.addEventListener("click", (event) => {
-    if (event.target === dialog) dialog.hidden = true;
+  function openEditorFromReminder(name) {
+    currentBirthdayName = name;
+    hub.hidden = false;
+    editor.hidden = true;
+    hub.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // The hub's template option needs the currently selected reminder name.
+  document.addEventListener("click", (event) => {
+    const option = event.target.closest('[data-creation-method="template"]');
+    if (option) {
+      openEditor(currentBirthdayName || "Birthday");
+    }
   });
 
-  // Expose a tiny hook so the existing reminder renderer can add its button
-  // without changing its persistence/expiry behavior.
-  window.BirthdayAssistantV151 = {
-    addButton(cardElement, personName) {
-      if (!cardElement || cardElement.querySelector("[data-birthday-card-create]")) return;
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "primary-action create-birthday-card-button";
-      button.setAttribute("data-birthday-card-create", personName || "");
-      button.textContent = "🎨 Create Birthday Card";
-      cardElement.appendChild(button);
-    },
-    showHub
-  };
+  nameInput.addEventListener("input", updatePreview);
+  messageInput.addEventListener("input", updatePreview);
+
+  if (closeEditor) closeEditor.addEventListener("click", closeEditorView);
+  if (cancelEditor) cancelEditor.addEventListener("click", closeEditorView);
+
+  const shuffleButton = document.getElementById("shuffleDesigns");
+  if (shuffleButton) {
+    shuffleButton.addEventListener("click", () => {
+      chooseDesignSet();
+    });
+  }
+
+  if (saveButton) {
+    saveButton.addEventListener("click", () => {
+      const saved = {
+        personName: nameInput.value.trim() || "Birthday",
+        message: messageInput.value.trim(),
+        theme: activeDesign ? activeDesign.id : "celebration",
+        createdAt: Date.now()
+      };
+      const key = "birthdayAssistantCardsV1";
+      const existing = JSON.parse(localStorage.getItem(key) || "[]");
+      existing.unshift(saved);
+      localStorage.setItem(key, JSON.stringify(existing.slice(0, 30)));
+      saveButton.textContent = "✅ Saved!";
+      setTimeout(() => { saveButton.textContent = "💾 Save Card"; }, 1400);
+    });
+  }
+
+  // When the hub is opened from a reminder, remember that reminder's name.
+  const originalShowHub = window.BirthdayAssistantV151 && window.BirthdayAssistantV151.showHub;
+  if (originalShowHub) {
+    window.BirthdayAssistantV151.showHub = function (birthday) {
+      currentBirthdayName = birthday || "Birthday";
+      hub.hidden = false;
+      editor.hidden = true;
+      hub.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+  }
 })();

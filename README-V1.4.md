@@ -1,6 +1,6 @@
-# Birthday Assistant V1.4
+# Birthday Assistant V1.5.1
 
-V1.4 keeps the validated V1.2.8 OneSignal architecture and adds a persistent in-app birthday reminder layer.
+V1.5.1 keeps the validated V1.2.8 OneSignal architecture and adds a persistent in-app birthday reminder layer.
 
 ## What changed
 
@@ -27,7 +27,7 @@ This carries the birthday person's name into the PWA when the notification is ta
 
 ## Test checklist
 
-1. Deploy the V1.4 files to GitHub Pages.
+1. Deploy the V1.5.1 files to GitHub Pages.
 2. Open the PWA and confirm existing OneSignal subscription is still enabled.
 3. Send a Make birthday notification.
 4. Confirm push arrives on iPad/phone.

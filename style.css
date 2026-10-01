@@ -274,3 +274,445 @@ details.diagnostics[open] summary::after { content:"−"; }
   .editor-layout { grid-template-columns:minmax(340px, 1.05fr) minmax(300px, .95fr); align-items:start; }
   .design-choices { grid-template-columns:repeat(3,1fr); }
 }
+
+/* V1.5.2.1 futuristic card editor */
+.card-editor-shell {
+  margin-top: 18px;
+  padding: clamp(16px, 3vw, 26px);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(94, 234, 212, .16), transparent 28%),
+    radial-gradient(circle at 85% 15%, rgba(129, 140, 248, .16), transparent 30%),
+    linear-gradient(145deg, #f8fbff 0%, #eef3f9 52%, #f9fbff 100%);
+  border: 1px solid rgba(20, 35, 55, .08);
+  box-shadow: 0 22px 55px rgba(15, 30, 55, .12);
+  overflow: hidden;
+}
+
+.card-editor-shell[hidden] {
+  display: none !important;
+}
+
+.editor-topbar {
+  display: grid;
+  grid-template-columns: 42px 1fr 42px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.editor-topbar h2 {
+  margin: 0;
+  font-size: clamp(1.25rem, 4vw, 1.65rem);
+}
+
+.editor-badge {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(255,255,255,.82);
+  box-shadow: 0 8px 18px rgba(20,35,55,.08);
+}
+
+.icon-back {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(255,255,255,.86);
+  font-size: 1.35rem;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(20,35,55,.08);
+}
+
+.editor-layout {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.card-preview-panel,
+.editor-controls {
+  min-width: 0;
+  border-radius: 22px;
+  background: rgba(255,255,255,.78);
+  border: 1px solid rgba(20,35,55,.07);
+  box-shadow: 0 10px 30px rgba(20,35,55,.07);
+}
+
+.card-preview-panel {
+  padding: 14px;
+}
+
+.preview-label,
+.field-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-label {
+  margin: 2px 4px 10px;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  opacity: .52;
+}
+
+.birthday-card-preview {
+  width: min(100%, 430px);
+  aspect-ratio: 4 / 5;
+  margin: 0 auto;
+  padding: clamp(24px, 6vw, 42px);
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+  position: relative;
+  color: white;
+  box-shadow: 0 20px 45px rgba(15, 25, 45, .20);
+}
+
+.card-eyebrow {
+  font-size: clamp(.65rem, 2vw, .8rem);
+  font-weight: 900;
+  letter-spacing: .22em;
+}
+
+.preview-name {
+  width: 100%;
+  font-size: clamp(2rem, 8vw, 4.2rem);
+  font-weight: 900;
+  line-height: .95;
+  overflow-wrap: anywhere;
+}
+
+.preview-message {
+  width: 100%;
+  max-width: 340px;
+  font-size: clamp(.9rem, 2.8vw, 1.12rem);
+  line-height: 1.42;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.card-decoration {
+  flex: 0 0 auto;
+  font-size: clamp(1.15rem, 4vw, 1.8rem);
+}
+
+.editor-controls {
+  padding: 16px;
+}
+
+.editor-field {
+  margin-bottom: 16px;
+}
+
+.editor-field label,
+.field-label {
+  display: block;
+  font-size: .84rem;
+  font-weight: 800;
+  margin-bottom: 7px;
+}
+
+.field-label-row span:last-child {
+  font-size: .72rem;
+  opacity: .5;
+}
+
+.editor-field input,
+.editor-field textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(20,35,55,.12);
+  border-radius: 14px;
+  background: rgba(255,255,255,.95);
+  padding: 12px 13px;
+  font: inherit;
+  color: inherit;
+  outline: none;
+  resize: vertical;
+}
+
+.editor-field input:focus,
+.editor-field textarea:focus {
+  border-color: rgba(45, 80, 130, .45);
+  box-shadow: 0 0 0 4px rgba(45, 80, 130, .08);
+}
+
+.design-section {
+  margin-bottom: 16px;
+}
+
+.design-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.design-option {
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  padding: 7px;
+  background: rgba(255,255,255,.94);
+  cursor: pointer;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+.design-option:hover,
+.design-option:focus-visible {
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.design-option.selected {
+  border-color: rgba(10, 32, 52, .9);
+  box-shadow: 0 8px 18px rgba(10,32,52,.14);
+}
+
+.design-swatch {
+  width: 100%;
+  height: 100%;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 1.55rem;
+  overflow: hidden;
+}
+
+.design-option-name {
+  display: none;
+}
+
+.editor-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.editor-actions button {
+  width: 100%;
+}
+
+.theme-celebration {
+  background: radial-gradient(circle at 20% 20%, #ff6b8a, transparent 35%),
+              linear-gradient(145deg, #ff6b6b, #ffb347);
+}
+.theme-kids {
+  background: radial-gradient(circle at 80% 20%, #ffd6f6, transparent 35%),
+              linear-gradient(145deg, #7dd3fc, #c4b5fd);
+}
+.theme-sports {
+  background: radial-gradient(circle at 70% 30%, #60a5fa, transparent 35%),
+              linear-gradient(145deg, #2563eb, #0f766e);
+}
+.theme-elegant {
+  background: radial-gradient(circle at 25% 20%, #f5f3ff, transparent 28%),
+              linear-gradient(145deg, #111827, #4c1d95);
+}
+.theme-fun {
+  background: radial-gradient(circle at 25% 25%, #fde68a, transparent 30%),
+              linear-gradient(145deg, #14b8a6, #ec4899);
+}
+.theme-classic {
+  background: radial-gradient(circle at 75% 15%, #fed7aa, transparent 30%),
+              linear-gradient(145deg, #9a3412, #b45309);
+}
+
+@media (min-width: 720px) {
+  .editor-layout {
+    grid-template-columns: minmax(300px, 1.05fr) minmax(300px, .95fr);
+    align-items: start;
+  }
+
+  .card-preview-panel {
+    position: sticky;
+    top: 16px;
+  }
+
+  .birthday-card-preview {
+    width: min(100%, 430px);
+  }
+}
+
+/* V1.5.2.2 — energetic dashboard + responsive polish */
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(99,102,241,.10), transparent 26%),
+    radial-gradient(circle at 92% 8%, rgba(20,184,166,.10), transparent 25%),
+    linear-gradient(145deg, #f5f8fc 0%, #edf3f8 50%, #f8fafc 100%);
+}
+
+.app {
+  width: min(1120px, calc(100% - 28px));
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 22px 0 52px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.hero {
+  grid-column: 1 / -1;
+  position: relative;
+  overflow: hidden;
+  padding: 28px 26px;
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,.24), transparent 25%),
+    radial-gradient(circle at 85% 80%, rgba(255,255,255,.14), transparent 28%),
+    linear-gradient(135deg, #0b1f33 0%, #123b5a 55%, #174d66 100%);
+  color: white;
+  text-align: left;
+  box-shadow: 0 24px 55px rgba(11,31,51,.20);
+}
+
+.hero::after {
+  content: "✦   ✧   ✦";
+  position: absolute;
+  right: 26px;
+  top: 18px;
+  font-size: 1.3rem;
+  letter-spacing: .8rem;
+  opacity: .30;
+}
+
+.hero .cake {
+  font-size: 42px;
+}
+
+.hero h1 {
+  margin: 5px 0 4px;
+  font-size: clamp(1.9rem, 4vw, 2.8rem);
+  letter-spacing: -.03em;
+}
+
+.hero p {
+  color: rgba(255,255,255,.72);
+  margin: 0;
+}
+
+.card,
+.card-creation-hub,
+.card-editor-shell {
+  margin: 0;
+}
+
+.dashboard-wide {
+  grid-column: 1 / -1;
+}
+
+.dashboard-panel {
+  height: 100%;
+}
+
+.notifications-panel,
+.diagnostics {
+  min-width: 0;
+}
+
+.card {
+  border: 1px solid rgba(20,35,55,.06);
+  box-shadow: 0 14px 34px rgba(11,31,51,.08);
+}
+
+.reminders-card {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,251,253,.98));
+}
+
+.birthday-cards-info {
+  background:
+    radial-gradient(circle at 90% 20%, rgba(99,102,241,.08), transparent 28%),
+    linear-gradient(135deg, rgba(255,255,255,.98), rgba(244,248,252,.98));
+}
+
+@media (min-width: 760px) {
+  .app {
+    grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr);
+    align-items: stretch;
+  }
+
+  .hero,
+  .dashboard-wide,
+  .card-creation-hub,
+  .card-editor-shell,
+  .v151-coming-soon {
+    grid-column: 1 / -1;
+  }
+
+  .notifications-panel,
+  .diagnostics {
+    grid-column: span 1;
+  }
+}
+
+@media (min-width: 1000px) {
+  .app {
+    gap: 18px;
+  }
+
+  .reminders-card {
+    padding: 24px;
+  }
+
+  .editor-layout {
+    grid-template-columns: minmax(420px, 1.1fr) minmax(390px, .9fr);
+  }
+
+  .design-options {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 759px) {
+  .app {
+    width: min(100% - 20px, 680px);
+    padding-top: 10px;
+  }
+
+  .hero {
+    padding: 22px 20px;
+  }
+
+  .editor-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .birthday-card-preview {
+    width: min(100%, 410px);
+  }
+
+  .design-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.shuffle-designs {
+  width: auto;
+  margin: 0;
+  padding: 6px 9px;
+  border-radius: 10px;
+  background: rgba(11,31,51,.07);
+  color: #0b1f33;
+  font-size: .72rem;
+  font-weight: 800;
+}
+
+.shuffle-designs:hover {
+  background: rgba(11,31,51,.12);
+}
