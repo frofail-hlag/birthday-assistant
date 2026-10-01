@@ -453,7 +453,7 @@ setTimeout(() => {
 }, 12000);
 
 
-/* V1.5.2.1 — responsive card editor + rotating design sets */
+/* V1.5.2.3 — stable card creator navigation */
 (function () {
   const hub = document.getElementById("cardCreationHub");
   const editor = document.getElementById("cardEditor");
@@ -466,10 +466,10 @@ setTimeout(() => {
   const messageInput = document.getElementById("cardMessage");
   const counter = document.getElementById("messageCounter");
   const designOptions = document.getElementById("designOptions");
-  const designSetLabel = document.getElementById("designSetLabel");
   const saveButton = document.getElementById("saveBirthdayCard");
   const closeEditor = document.getElementById("closeCardEditor");
   const cancelEditor = document.getElementById("cancelCardEditor");
+  const closeHub = document.getElementById("closeCardCreationHub");
 
   const designs = [
     { id: "celebration", name: "Celebration", emoji: "🎉", className: "theme-celebration" },
@@ -487,7 +487,7 @@ setTimeout(() => {
   ];
 
   let activeSet = [];
-  let activeDesign = null;
+  let activeDesign = designs[0];
   let currentBirthdayName = "";
 
   function shuffle(array) {
@@ -502,13 +502,14 @@ setTimeout(() => {
   function chooseDesignSet() {
     const key = "birthdayAssistantLastDesignSetV1";
     const previous = JSON.parse(localStorage.getItem(key) || "[]");
-
     let candidate = [];
+
     for (let attempt = 0; attempt < 12; attempt++) {
       candidate = shuffle(designs).slice(0, 6);
+      if (!previous.length) break;
       const previousIds = new Set(previous);
       const overlap = candidate.filter(d => previousIds.has(d.id)).length;
-      if (!previous.length || overlap <= 3) break;
+      if (overlap <= 3) break;
     }
 
     activeSet = candidate;
@@ -517,36 +518,47 @@ setTimeout(() => {
 
     renderDesignOptions();
     applyDesign();
-    designSetLabel.textContent = "New set";
   }
 
   function renderDesignOptions() {
+    if (!designOptions) return;
     designOptions.innerHTML = "";
+
     activeSet.forEach((design) => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "design-option" + (design.id === activeDesign.id ? " selected" : "");
       button.setAttribute("aria-label", design.name);
-      button.innerHTML =
-        '<span class="design-swatch ' + design.className + '">' + design.emoji + '</span>' +
-        '<span class="design-option-name">' + design.name + '</span>';
-      button.addEventListener("click", () => {
+
+      const swatch = document.createElement("span");
+      swatch.className = "design-swatch " + design.className;
+      swatch.textContent = design.emoji;
+
+      const label = document.createElement("span");
+      label.className = "design-option-name";
+      label.textContent = design.name;
+
+      button.append(swatch, label);
+      button.addEventListener("click", function () {
         activeDesign = design;
         renderDesignOptions();
         applyDesign();
       });
+
       designOptions.appendChild(button);
     });
   }
 
   function applyDesign() {
-    preview.className = "birthday-card-preview " + activeDesign.className;
+    if (preview && activeDesign) {
+      preview.className = "birthday-card-preview " + activeDesign.className;
+    }
   }
 
   function updatePreview() {
-    const name = nameInput.value.trim() || "Birthday!";
-    const message = messageInput.value.trim();
-    previewName.textContent = name + (name === "Birthday!" ? "" : "!");
+    const name = (nameInput.value || "").trim() || "Birthday";
+    const message = messageInput.value || "";
+    previewName.textContent = name + (name === "Birthday" ? "!" : "!");
     previewMessage.textContent = message;
     counter.textContent = message.length + "/220";
   }
@@ -555,91 +567,116 @@ setTimeout(() => {
     return `🎂 Alles Gute zum Geburtstag, ${name}! Ich wünsche dir einen wunderschönen Tag voller Freude, Glück und schöner Momente! 🎉`;
   }
 
-  function openEditor(personName) {
-    currentBirthdayName = personName || "Birthday";
-    nameInput.value = currentBirthdayName;
-    messageInput.value = defaultMessage(currentBirthdayName);
+  function showHub(name) {
+    currentBirthdayName = name || currentBirthdayName || "Birthday";
+    editor.hidden = true;
+    hub.hidden = false;
+    hub.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function openEditor() {
+    const name = currentBirthdayName || "Birthday";
+    nameInput.value = name;
+    messageInput.value = defaultMessage(name);
     chooseDesignSet();
     updatePreview();
+
     hub.hidden = true;
     editor.hidden = false;
     editor.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function closeEditorView() {
-    editor.hidden = true;
-    hub.hidden = false;
-    hub.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
-  document.addEventListener("click", (event) => {
+  // One and only one delegated handler for creation buttons.
+  document.addEventListener("click", function (event) {
     const createButton = event.target.closest("[data-birthday-card-create]");
     if (createButton) {
-      const name = createButton.getAttribute("data-birthday-card-create") || "Birthday";
-      openEditorFromReminder(name);
+      event.preventDefault();
+      event.stopPropagation();
+      showHub(createButton.getAttribute("data-birthday-card-create") || "Birthday");
       return;
     }
 
-    const option = event.target.closest("[data-creation-method]");
-    if (option && option.getAttribute("data-creation-method") === "template") {
-      openEditor(currentBirthdayName || "Birthday");
+    const methodButton = event.target.closest("[data-creation-method]");
+    if (methodButton) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const method = methodButton.getAttribute("data-creation-method");
+      if (method === "template") {
+        openEditor();
+      } else if (method === "ai") {
+        alert("✨ AI card creation will be added in the next V1.5 step.");
+      } else if (method === "photo") {
+        alert("📷 Photo card creation will be added in the next V1.5 step.");
+      }
       return;
     }
   });
 
-  function openEditorFromReminder(name) {
-    currentBirthdayName = name;
-    hub.hidden = false;
-    editor.hidden = true;
-    hub.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (closeHub) {
+    closeHub.addEventListener("click", function (event) {
+      event.preventDefault();
+      editor.hidden = true;
+      hub.hidden = true;
+      const reminders = document.getElementById("remindersCard");
+      (reminders || document.body).scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
-  // The hub's template option needs the currently selected reminder name.
-  document.addEventListener("click", (event) => {
-    const option = event.target.closest('[data-creation-method="template"]');
-    if (option) {
-      openEditor(currentBirthdayName || "Birthday");
-    }
-  });
+  if (closeEditor) {
+    closeEditor.addEventListener("click", function (event) {
+      event.preventDefault();
+      showHub(currentBirthdayName);
+    });
+  }
 
-  nameInput.addEventListener("input", updatePreview);
-  messageInput.addEventListener("input", updatePreview);
+  if (cancelEditor) {
+    cancelEditor.addEventListener("click", function (event) {
+      event.preventDefault();
+      showHub(currentBirthdayName);
+    });
+  }
 
-  if (closeEditor) closeEditor.addEventListener("click", closeEditorView);
-  if (cancelEditor) cancelEditor.addEventListener("click", closeEditorView);
+  if (nameInput) nameInput.addEventListener("input", updatePreview);
+  if (messageInput) messageInput.addEventListener("input", updatePreview);
 
   const shuffleButton = document.getElementById("shuffleDesigns");
   if (shuffleButton) {
-    shuffleButton.addEventListener("click", () => {
+    shuffleButton.addEventListener("click", function (event) {
+      event.preventDefault();
       chooseDesignSet();
     });
   }
 
   if (saveButton) {
-    saveButton.addEventListener("click", () => {
+    saveButton.addEventListener("click", function (event) {
+      event.preventDefault();
+
       const saved = {
-        personName: nameInput.value.trim() || "Birthday",
-        message: messageInput.value.trim(),
+        personName: (nameInput.value || "").trim() || "Birthday",
+        message: messageInput.value || "",
         theme: activeDesign ? activeDesign.id : "celebration",
         createdAt: Date.now()
       };
+
       const key = "birthdayAssistantCardsV1";
-      const existing = JSON.parse(localStorage.getItem(key) || "[]");
+      let existing = [];
+      try {
+        existing = JSON.parse(localStorage.getItem(key) || "[]");
+      } catch (_) {
+        existing = [];
+      }
+
       existing.unshift(saved);
       localStorage.setItem(key, JSON.stringify(existing.slice(0, 30)));
+
+      const original = saveButton.textContent;
       saveButton.textContent = "✅ Saved!";
-      setTimeout(() => { saveButton.textContent = "💾 Save Card"; }, 1400);
+      setTimeout(() => { saveButton.textContent = original; }, 1400);
     });
   }
 
-  // When the hub is opened from a reminder, remember that reminder's name.
-  const originalShowHub = window.BirthdayAssistantV151 && window.BirthdayAssistantV151.showHub;
-  if (originalShowHub) {
-    window.BirthdayAssistantV151.showHub = function (birthday) {
-      currentBirthdayName = birthday || "Birthday";
-      hub.hidden = false;
-      editor.hidden = true;
-      hub.scrollIntoView({ behavior: "smooth", block: "start" });
-    };
-  }
+  // Expose a clean API for the reminder renderer.
+  window.BirthdayAssistantV151 = window.BirthdayAssistantV151 || {};
+  window.BirthdayAssistantV151.showHub = showHub;
 })();
