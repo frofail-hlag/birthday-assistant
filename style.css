@@ -38,3 +38,171 @@ details.diagnostics summary::after { content:"＋"; float:right; font-size:20px;
 details.diagnostics[open] summary::after { content:"−"; }
 .diag-content { margin-top:14px; }
 @media (max-width:430px) { .app { padding-left:14px; padding-right:14px; } .card { padding:17px; } }
+
+
+
+/* =========================================================
+   V1.5.1 — Birthday Card Creation Hub
+   ========================================================= */
+.card-creation-hub {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(247,249,252,.98));
+  border: 1px solid rgba(20, 35, 55, .08);
+  box-shadow: 0 12px 30px rgba(20, 35, 55, .08);
+}
+
+.card-creation-hub[hidden],
+.v151-coming-soon[hidden] {
+  display: none !important;
+}
+
+.section-kicker {
+  font-size: .76rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .62;
+  margin-bottom: 4px;
+}
+
+.section-subtitle {
+  margin: 4px 0 0;
+  opacity: .7;
+}
+
+.card-creation-options {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.creation-option {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 52px 1fr 24px;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  border: 1px solid rgba(20, 35, 55, .08);
+  border-radius: 18px;
+  padding: 14px 14px 14px 12px;
+  background: #fff;
+  box-shadow: 0 5px 15px rgba(20, 35, 55, .06);
+  cursor: pointer;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+
+.creation-option:hover,
+.creation-option:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 9px 22px rgba(20, 35, 55, .10);
+  border-color: rgba(20, 35, 55, .16);
+  outline: none;
+}
+
+.creation-option:active {
+  transform: translateY(0);
+}
+
+.creation-option-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  font-size: 1.65rem;
+  background: #f3f6fa;
+}
+
+.creation-option-content {
+  display: grid;
+  gap: 3px;
+}
+
+.creation-option-content strong {
+  font-size: 1rem;
+}
+
+.creation-option-content span {
+  font-size: .86rem;
+  line-height: 1.35;
+  opacity: .68;
+}
+
+.creation-option-arrow {
+  font-size: 1.55rem;
+  opacity: .42;
+  text-align: center;
+}
+
+.card-hub-back {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.create-birthday-card-button {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.v151-coming-soon {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, .48);
+  backdrop-filter: blur(4px);
+}
+
+.v151-dialog {
+  width: min(100%, 390px);
+  padding: 24px;
+  border-radius: 24px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 25px 70px rgba(0,0,0,.24);
+}
+
+.v151-dialog-icon {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+
+.v151-dialog h3 {
+  margin: 0 0 8px;
+}
+
+.v151-dialog p {
+  margin: 0;
+  line-height: 1.5;
+  opacity: .72;
+}
+
+.v151-dialog .primary-action {
+  width: 100%;
+  margin-top: 18px;
+}
+
+@media (min-width: 640px) {
+  .card-creation-options {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .creation-option {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding: 20px 14px;
+  }
+
+  .creation-option-icon {
+    margin: 0 auto 4px;
+  }
+
+  .creation-option-arrow {
+    display: none;
+  }
+}

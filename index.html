@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="style.css">
   <title>Birthday Assistant</title>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <!-- Birthday Assistant V1.5.1 -->
 </head>
 <body>
   <main class="app">
@@ -66,7 +67,58 @@
       <p>Personalized birthday cards are coming next.</p>
       <button class="secondary" disabled>🎨 Create Birthday Card</button>
     </section>
-  </main>
+  
+<section id="cardCreationHub" class="card-creation-hub" hidden aria-labelledby="cardCreationTitle">
+  <div class="section-header">
+    <div>
+      <div class="section-kicker">Birthday Cards</div>
+      <h2 id="cardCreationTitle">🎨 Create Your Birthday Card</h2>
+      <p class="section-subtitle">How would you like to create it?</p>
+    </div>
+  </div>
+
+  <div class="card-creation-options">
+    <button type="button" class="creation-option" data-creation-method="template">
+      <span class="creation-option-icon">🎨</span>
+      <span class="creation-option-content">
+        <strong>Create a Card</strong>
+        <span>Choose a beautiful design and personalize it.</span>
+      </span>
+      <span class="creation-option-arrow" aria-hidden="true">›</span>
+    </button>
+
+    <button type="button" class="creation-option" data-creation-method="ai">
+      <span class="creation-option-icon">✨</span>
+      <span class="creation-option-content">
+        <strong>Use AI</strong>
+        <span>Create something unique with AI.</span>
+      </span>
+      <span class="creation-option-arrow" aria-hidden="true">›</span>
+    </button>
+
+    <button type="button" class="creation-option" data-creation-method="photo">
+      <span class="creation-option-icon">📷</span>
+      <span class="creation-option-content">
+        <strong>Use My Photo</strong>
+        <span>Start with your own photo.</span>
+      </span>
+      <span class="creation-option-arrow" aria-hidden="true">›</span>
+    </button>
+  </div>
+
+  <button type="button" id="closeCardCreationHub" class="secondary-action card-hub-back">← Back to Birthday Reminders</button>
+</section>
+
+<div id="v151ComingSoon" class="v151-coming-soon" hidden role="dialog" aria-modal="true" aria-labelledby="v151ComingSoonTitle">
+  <div class="v151-dialog">
+    <div class="v151-dialog-icon" id="v151DialogIcon">🎨</div>
+    <h3 id="v151ComingSoonTitle">Card Creator</h3>
+    <p id="v151ComingSoonText">This creation option is part of the next V1.5 step. The V1.5.1 hub is ready, while the actual creator will be added next.</p>
+    <button type="button" id="closeV151Dialog" class="primary-action">Got it</button>
+  </div>
+</div>
+
+</main>
 
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];

@@ -444,3 +444,132 @@ setTimeout(() => {
     updateDiagnostics();
   }
 }, 12000);
+
+
+/* V1.5.1 card creation hub */
+
+/* V1.5.1 card creation hub */
+(function () {
+  const hub = document.getElementById("cardCreationHub");
+  const closeHub = document.getElementById("closeCardCreationHub");
+  const dialog = document.getElementById("v151ComingSoon");
+  const closeDialog = document.getElementById("closeV151Dialog");
+  const dialogIcon = document.getElementById("v151DialogIcon");
+  const dialogTitle = document.getElementById("v151ComingSoonTitle");
+  const dialogText = document.getElementById("v151ComingSoonText");
+
+  if (!hub) return;
+
+  let selectedBirthday = null;
+
+  function showHub(birthday) {
+    selectedBirthday = birthday || null;
+    hub.hidden = false;
+    hub.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function hideHub() {
+    hub.hidden = true;
+  }
+
+  function showComingSoon(method) {
+    const config = {
+      template: {
+        icon: "🎨",
+        title: "Create a Card",
+        text: "The design creator is the next V1.5 step. For now, you can explore the new creation hub safely without changing your V1.4 reminder system."
+      },
+      ai: {
+        icon: "✨",
+        title: "Use AI",
+        text: "The AI card creator is coming in the next V1.5 step. This hub is already prepared for it."
+      },
+      photo: {
+        icon: "📷",
+        title: "Use My Photo",
+        text: "Photo-based cards are coming in a later V1.5 step. Your existing reminders remain unchanged."
+      }
+    }[method];
+
+    if (!config) return;
+    dialogIcon.textContent = config.icon;
+    dialogTitle.textContent = config.title;
+    dialogText.textContent = config.text;
+    dialog.hidden = false;
+  }
+
+  document.addEventListener("click", function (event) {
+    const button = event.target.closest("[data-birthday-card-create]");
+    if (button) {
+      const birthday = button.getAttribute("data-birthday-card-create") || "";
+      showHub(birthday);
+      return;
+    }
+
+    const option = event.target.closest("[data-creation-method]");
+    if (option) {
+      showComingSoon(option.getAttribute("data-creation-method"));
+    }
+  });
+
+  if (closeHub) closeHub.addEventListener("click", hideHub);
+  if (closeDialog) closeDialog.addEventListener("click", () => { dialog.hidden = true; });
+  if (dialog) dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.hidden = true;
+  });
+
+  // Expose a tiny hook so the existing reminder renderer can add its button
+  // without changing its persistence/expiry behavior.
+  window.BirthdayAssistantV151 = {
+    addButton(cardElement, personName) {
+      if (!cardElement || cardElement.querySelector("[data-birthday-card-create]")) return;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "primary-action create-birthday-card-button";
+      button.setAttribute("data-birthday-card-create", personName || "");
+      button.textContent = "🎨 Create Birthday Card";
+      cardElement.appendChild(button);
+    },
+    showHub
+  };
+})();
+
+
+
+/* V1.5.1 reminder-card integration */
+(function () {
+  function enhanceReminderCards() {
+    const api = window.BirthdayAssistantV151;
+    if (!api) return;
+
+    // Prefer explicit reminder/card containers if present.
+    const selectors = [
+      "[data-reminder-card]",
+      ".reminder-card",
+      ".birthday-reminder",
+      ".reminder-item",
+      "#birthdayReminders article",
+      "#birthdayReminders .card"
+    ];
+
+    let cards = [];
+    for (const selector of selectors) {
+      cards = Array.from(document.querySelectorAll(selector));
+      if (cards.length) break;
+    }
+
+    cards.forEach((card) => {
+      if (card.querySelector("[data-birthday-card-create]")) return;
+      const text = card.innerText || "";
+      const match = text.match(/Tomorrow is\s+(.+?)(?:['’]s birthday|!|\n|$)/i);
+      const personName = match ? match[1].trim() : "";
+      api.addButton(card, personName);
+    });
+  }
+
+  enhanceReminderCards();
+  const observer = new MutationObserver(enhanceReminderCards);
+  observer.observe(document.body, { childList: true, subtree: true });
+  setTimeout(enhanceReminderCards, 300);
+  setTimeout(enhanceReminderCards, 1000);
+})();
