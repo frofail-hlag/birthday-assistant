@@ -958,7 +958,7 @@ setTimeout(() => {
 })();
 
 /* =========================================================
-   V1.6.1 — AI Birthday Card Studio experience
+   V1.6.2 — AI Birthday Card Studio experience
    ========================================================= */
 (function () {
   const hub = document.getElementById("cardCreationHub");
