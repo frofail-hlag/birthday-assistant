@@ -801,3 +801,88 @@ body {
 .card-editor-shell .icon-back::before { content:"←"; }
 .card-editor-shell .icon-back { font-size:0 !important; }
 .card-editor-shell .icon-back::before { font-size:1.35rem; }
+
+/* =========================================================
+   V1.6 — AI Birthday Card Studio
+   ========================================================= */
+.ai-card-studio {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 18px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(168,85,247,.14), transparent 25%),
+    radial-gradient(circle at 88% 16%, rgba(45,212,191,.12), transparent 25%),
+    linear-gradient(145deg, #f8fbff 0%, #eef3f9 55%, #fbf9ff 100%);
+  border: 1px solid rgba(20,35,55,.08);
+  box-shadow: 0 22px 55px rgba(15,30,55,.12);
+  overflow: hidden;
+}
+.ai-card-studio[hidden] { display:none !important; }
+.ai-studio-topbar {
+  display:grid;
+  grid-template-columns:42px 1fr 42px;
+  align-items:center;
+  gap:12px;
+  margin-bottom:18px;
+}
+.ai-studio-topbar h2 { margin:0; font-size:clamp(1.3rem,4vw,1.7rem); }
+.ai-studio-badge {
+  width:42px;height:42px;border-radius:14px;display:grid;place-items:center;
+  background:rgba(255,255,255,.88); box-shadow:0 8px 18px rgba(20,35,55,.08);
+}
+.ai-studio-layout {
+  display:grid;
+  grid-template-columns:minmax(320px,.85fr) minmax(380px,1.15fr);
+  gap:18px;
+  align-items:start;
+}
+.ai-input-panel,
+.ai-result-panel {
+  border:1px solid rgba(20,35,55,.07);
+  border-radius:22px;
+  background:rgba(255,255,255,.84);
+  box-shadow:0 12px 30px rgba(11,31,51,.07);
+  padding:18px;
+}
+.ai-intro {
+  display:flex; gap:12px; align-items:center; padding:14px;
+  border-radius:18px; background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(20,184,166,.08));
+  margin-bottom:16px;
+}
+.ai-sparkle { font-size:1.7rem; }
+.ai-intro strong,.ai-intro span { display:block; }
+.ai-intro span:last-child { margin-top:3px; font-size:.78rem; opacity:.62; }
+.ai-field-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.ai-input-panel select,
+.ai-input-panel input,
+.ai-input-panel textarea {
+  width:100%; border:1px solid rgba(20,35,55,.12); border-radius:14px;
+  padding:12px 13px; background:#fff; font:inherit; color:#102337;
+}
+.ai-input-panel textarea { resize:vertical; }
+.ai-input-panel .editor-field { margin-bottom:12px; }
+.ai-studio-actions { display:grid; grid-template-columns:1.4fr .8fr; gap:10px; margin-top:4px; }
+.ai-prototype-note { margin:12px 2px 0; font-size:.7rem; line-height:1.45; opacity:.55; }
+.ai-result-panel { min-height:100%; display:flex; flex-direction:column; align-items:center; }
+.ai-result-panel .preview-label { align-self:flex-start; }
+.ai-empty-state {
+  min-height:440px; width:100%; display:grid; place-items:center; align-content:center; text-align:center;
+  color:#294158; opacity:.65; padding:30px;
+}
+.ai-empty-state div { font-size:3rem; margin-bottom:12px; }
+.ai-empty-state strong,.ai-empty-state span { display:block; }
+.ai-empty-state span { margin-top:6px; font-size:.8rem; max-width:280px; }
+.ai-card-preview { width:min(100%,430px); margin:8px auto 0; }
+.ai-result-actions { width:min(100%,430px); display:grid; grid-template-columns:1.3fr .8fr; gap:10px; margin-top:14px; }
+.ai-result-actions[hidden] { display:none !important; }
+@media (max-width: 900px) {
+  .ai-studio-layout { grid-template-columns:1fr; }
+  .ai-result-panel { order:-1; }
+  .ai-empty-state { min-height:260px; }
+}
+@media (max-width: 560px) {
+  .ai-field-grid { grid-template-columns:1fr; }
+  .ai-studio-actions,.ai-result-actions { grid-template-columns:1fr; }
+  .ai-card-studio { padding:14px; }
+}

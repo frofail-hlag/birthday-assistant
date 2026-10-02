@@ -849,7 +849,9 @@ setTimeout(() => {
       if (method === "template") {
         openEditor();
       } else if (method === "ai") {
-        alert("✨ AI card creation will be added in the next V1.5 step.");
+        if (window.BirthdayAssistantAI?.open) {
+          window.BirthdayAssistantAI.open(currentBirthdayName);
+        }
       } else if (method === "photo") {
         alert("📷 Photo card creation will be added in the next V1.5 step.");
       }
@@ -940,6 +942,22 @@ setTimeout(() => {
   window.BirthdayAssistantV151 = window.BirthdayAssistantV151 || {};
   window.BirthdayAssistantV151.showHub = showHub;
   window.BirthdayAssistantV151.openEditor = openEditor;
+  window.BirthdayAssistantV151.openDraft = function (draft) {
+    editingCardId = null;
+    currentBirthdayName = draft?.name || currentBirthdayName || "Birthday";
+    nameInput.value = currentBirthdayName;
+    messageInput.value = draft?.message || defaultMessage(currentBirthdayName);
+    const selected = designs.find(d => d.id === draft?.theme) || designs[0];
+    activeDesign = selected;
+    activeSet = designs.slice();
+    renderDesignOptions();
+    applyDesign();
+    updatePreview();
+    hub.hidden = true;
+    editor.hidden = false;
+    editor.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   window.BirthdayAssistantV151.openSavedCard = function (cardId) {
     const card = readSavedCards().find(item => item.id === cardId);
     if (!card) return;
@@ -956,4 +974,155 @@ setTimeout(() => {
     editor.hidden = false;
     editor.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+})();
+
+/* V1.6 — AI Birthday Card Studio */
+(function () {
+  const studio = document.getElementById("aiCardStudio");
+  if (!studio) return;
+
+  const nameInput = document.getElementById("aiName");
+  const relationship = document.getElementById("aiRelationship");
+  const mood = document.getElementById("aiMood");
+  const interest = document.getElementById("aiInterest");
+  const extra = document.getElementById("aiExtra");
+  const generate = document.getElementById("generateAiCard");
+  const close = document.getElementById("closeAiCardStudio");
+  const closeSecondary = document.getElementById("closeAiCardStudioSecondary");
+  const preview = document.getElementById("aiCardPreview");
+  const empty = document.getElementById("aiCardPreviewEmpty");
+  const resultActions = document.getElementById("aiResultActions");
+  const useCard = document.getElementById("useAiCard");
+  const regenerate = document.getElementById("regenerateAiCard");
+  const previewName = document.getElementById("aiPreviewName");
+  const previewMessage = document.getElementById("aiPreviewMessage");
+  const previewTop = document.getElementById("aiPreviewTop");
+  const previewBottom = document.getElementById("aiPreviewBottom");
+  const watermark = preview?.querySelector(".card-theme-watermark");
+
+  let currentBirthdayName = "Birthday";
+  let generatedDraft = null;
+
+  const themes = window.BirthdayCardDesigns || [];
+
+  function findTheme(id) {
+    return themes.find(theme => theme.id === id) || themes.find(theme => theme.id === "celebration") || themes[0];
+  }
+
+  function inferTheme(text, selectedMood) {
+    const value = `${text || ""}`.toLowerCase();
+    if (/football|soccer|sport|basketball|tennis|gym|running|champion|verein|fussball|fußball/.test(value)) return "sports";
+    if (/gaming|game|playstation|xbox|nintendo|gamer|controller|zocken/.test(value)) return "gaming";
+    if (/travel|trip|holiday|adventure|hiking|mountain|reisen|urlaub|wandern|abenteuer/.test(value)) return "adventure";
+    if (/space|planet|astronaut|star|universe|weltraum|sterne|raumfahrt/.test(value)) return "space";
+    if (/flower|garden|nature|blossom|pflanz|garten|blumen/.test(value)) return "flowers";
+    if (/unicorn|magic|fairy|princess|märchen|magie|einhorn/.test(value)) return "unicorn";
+    if (/rainbow|farben|color|colour/.test(value)) return "rainbow";
+    if (selectedMood === "elegant") return "elegant";
+    if (selectedMood === "christian") return "classic";
+    if (selectedMood === "fun") return "fun";
+    if (selectedMood === "energetic") return "celebration";
+    return "classic";
+  }
+
+  function generateMessage(name, relation, selectedMood, interestText, extraText) {
+    const n = name || "dir";
+    const subject = interestText ? ` und ganz besonders viel Freude bei ${interestText}` : "";
+    const extraLine = extraText ? ` ${extraText.trim().replace(/[.!?]+$/, "")}.` : "";
+
+    if (selectedMood === "christian") {
+      return `🎂 Alles Gute zum Geburtstag, ${n}! Möge Gott dich im neuen Lebensjahr segnen, begleiten und dir viel Freude, Frieden und Gesundheit schenken. 🙏🎉${extraLine}`.slice(0, 220);
+    }
+    if (selectedMood === "elegant") {
+      return `✨ Herzlichen Glückwunsch zum Geburtstag, ${n}! Ich wünsche dir ein wundervolles neues Lebensjahr voller besonderer Momente, Glück und Erfolg${subject}. 🥂${extraLine}`.slice(0, 220);
+    }
+    if (selectedMood === "fun") {
+      return `😂 Happy Birthday, ${n}! Bleib genauso großartig, hab einen fantastischen Tag und lass dich ordentlich feiern! 🎉${interestText ? ` Und natürlich: viel Spaß bei ${interestText}!` : ""}${extraLine}`.slice(0, 220);
+    }
+    if (selectedMood === "energetic") {
+      return `🎉 Happy Birthday, ${n}! Heute wird gefeiert! Ich wünsche dir jede Menge Energie, Glück, tolle Erlebnisse und ein fantastisches neues Lebensjahr! 🚀${interestText ? ` Besonders viel Spaß bei ${interestText}!` : ""}${extraLine}`.slice(0, 220);
+    }
+    if (relation === "partner") {
+      return `❤️ Alles Gute zum Geburtstag, ${n}! Ich wünsche dir einen wunderschönen Tag voller Liebe, Freude und ganz besonderer Momente. Auf ein großartiges neues Lebensjahr! 🎉${extraLine}`.slice(0, 220);
+    }
+    if (relation === "family") {
+      return `🎂 Alles Liebe zum Geburtstag, ${n}! Ich wünsche dir von Herzen Gesundheit, Glück und viele schöne Momente mit der Familie. Lass dich heute richtig feiern! ❤️${extraLine}`.slice(0, 220);
+    }
+    if (relation === "colleague") {
+      return `🎉 Herzlichen Glückwunsch zum Geburtstag, ${n}! Ich wünsche dir Gesundheit, Glück und einen tollen Tag – und natürlich weiterhin viel Erfolg bei allem, was vor dir liegt! 🥳${extraLine}`.slice(0, 220);
+    }
+    return `🎂 Alles Gute zum Geburtstag, ${n}! Ich wünsche dir einen wunderschönen Tag voller Freude, Glück und unvergesslicher Momente! 🎉${interestText ? ` Viel Spaß bei ${interestText}!` : ""}${extraLine}`.slice(0, 220);
+  }
+
+  function renderDraft(draft) {
+    const theme = findTheme(draft.theme);
+    preview.className = `birthday-card-preview ai-card-preview ${theme.className}`;
+    previewName.textContent = `${draft.name}!`;
+    previewMessage.textContent = draft.message;
+    previewTop.textContent = theme.top || theme.emoji;
+    previewBottom.textContent = theme.bottom || theme.emoji;
+    watermark.textContent = theme.watermark || theme.emoji;
+    empty.hidden = true;
+    preview.hidden = false;
+    resultActions.hidden = false;
+  }
+
+  function generateDraft() {
+    const name = (nameInput.value || currentBirthdayName || "Birthday").trim() || "Birthday";
+    const interestText = (interest.value || "").trim();
+    const extraText = (extra.value || "").trim();
+    const relation = relationship.value;
+    const selectedMood = mood.value;
+    const theme = findTheme(inferTheme(`${interestText} ${extraText}`, selectedMood));
+    generatedDraft = {
+      name,
+      message: generateMessage(name, relation, selectedMood, interestText, extraText),
+      theme: theme?.id || "celebration"
+    };
+    renderDraft(generatedDraft);
+  }
+
+  function open(name) {
+    currentBirthdayName = name || "Birthday";
+    nameInput.value = currentBirthdayName;
+    interest.value = "";
+    extra.value = "";
+    relationship.value = "friend";
+    mood.value = "fun";
+    generatedDraft = null;
+    empty.hidden = false;
+    preview.hidden = true;
+    resultActions.hidden = true;
+
+    document.getElementById("cardCreationHub").hidden = true;
+    document.getElementById("cardEditor").hidden = true;
+    studio.hidden = false;
+    studio.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function closeStudio() {
+    studio.hidden = true;
+    if (window.BirthdayAssistantV151?.showHub) {
+      window.BirthdayAssistantV151.showHub(currentBirthdayName);
+    }
+  }
+
+  generate?.addEventListener("click", (event) => {
+    event.preventDefault();
+    generateDraft();
+  });
+  regenerate?.addEventListener("click", (event) => {
+    event.preventDefault();
+    generateDraft();
+  });
+  useCard?.addEventListener("click", (event) => {
+    event.preventDefault();
+    if (!generatedDraft) return;
+    studio.hidden = true;
+    window.BirthdayAssistantV151?.openDraft?.(generatedDraft);
+  });
+  close?.addEventListener("click", (event) => { event.preventDefault(); closeStudio(); });
+  closeSecondary?.addEventListener("click", (event) => { event.preventDefault(); closeStudio(); });
+
+  window.BirthdayAssistantAI = { open };
 })();
