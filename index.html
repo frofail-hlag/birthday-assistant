@@ -9,10 +9,10 @@
   <meta name="apple-mobile-web-app-title" content="Birthday Assistant">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="style.css?v=1.6.0">
+  <link rel="stylesheet" href="style.css?v=1.5.3.2">
   <title>Birthday Assistant</title>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <!-- Birthday Assistant V1.6 -->
+  <!-- Birthday Assistant V1.5.3.2 -->
 </head>
 <body>
   <main class="app">
@@ -113,20 +113,11 @@
       <span class="creation-option-arrow" aria-hidden="true">›</span>
     </button>
 
-    <button type="button" class="creation-option" data-creation-method="ai">
+    <button type="button" class="creation-option creation-option-ai" data-creation-method="ai">
       <span class="creation-option-icon">✨</span>
       <span class="creation-option-content">
         <strong>Use AI</strong>
-        <span>Create something unique with AI.</span>
-      </span>
-      <span class="creation-option-arrow" aria-hidden="true">›</span>
-    </button>
-
-    <button type="button" class="creation-option" data-creation-method="photo">
-      <span class="creation-option-icon">📷</span>
-      <span class="creation-option-content">
-        <strong>Use My Photo</strong>
-        <span>Start with your own photo.</span>
+        <span>Describe the person, add a photo if you want, and let AI create something unique.</span>
       </span>
       <span class="creation-option-arrow" aria-hidden="true">›</span>
     </button>
@@ -135,98 +126,61 @@
   <button type="button" id="closeCardCreationHub" class="secondary-action card-hub-back" onclick="BirthdayCardUI.closeHub()">← Back to Birthday Reminders</button>
 </section>
 
-
-
 <section id="aiCardStudio" class="ai-card-studio" hidden aria-labelledby="aiCardStudioTitle">
   <div class="ai-studio-topbar">
-    <button type="button" id="closeAiCardStudio" class="icon-back" aria-label="Back"><span aria-hidden="true">←</span></button>
-    <div>
+    <button type="button" id="closeAiStudio" class="icon-back" aria-label="Back">←</button>
+    <div class="ai-studio-title">
       <div class="section-kicker">AI BIRTHDAY CARDS</div>
-      <h2 id="aiCardStudioTitle">✨ Create with AI</h2>
-      <p class="section-subtitle">Give AI a few ideas and create a card that feels personal.</p>
+      <h2 id="aiCardStudioTitle">✨ AI Birthday Card Studio</h2>
+      <p>Create a card that is unique to the person — not just another template.</p>
     </div>
-    <div class="ai-studio-badge" aria-hidden="true">✨</div>
+    <div class="ai-powered-badge">✨<span><strong>AI Powered</strong><small>Unique designs</small></span></div>
   </div>
 
   <div class="ai-studio-layout">
     <div class="ai-input-panel">
-      <div class="ai-intro">
-        <span class="ai-sparkle">✨</span>
-        <div>
-          <strong>Tell us about the birthday person</strong>
-          <span>The more you tell us, the more personal the draft becomes.</span>
-        </div>
+      <div class="ai-step"><span>1</span><div><strong>Who is the card for?</strong><input id="aiPersonName" type="text" placeholder="Daniel"></div></div>
+      <div class="ai-step"><span>2</span><div><strong>Relationship</strong><div class="ai-chip-grid" id="aiRelationshipChoices">
+        <button type="button" class="ai-chip active" data-ai-value="Friend">👥 Friend</button>
+        <button type="button" class="ai-chip" data-ai-value="Family">👨‍👩‍👧 Family</button>
+        <button type="button" class="ai-chip" data-ai-value="Partner">❤️ Partner</button>
+        <button type="button" class="ai-chip" data-ai-value="Colleague">💼 Colleague</button>
+      </div></div></div>
+      <div class="ai-step"><span>3</span><div><strong>What's the mood?</strong><div class="ai-chip-grid" id="aiMoodChoices">
+        <button type="button" class="ai-chip active" data-ai-value="Funny & Playful">😂 Funny & Playful</button>
+        <button type="button" class="ai-chip" data-ai-value="Warm">❤️ Warm</button>
+        <button type="button" class="ai-chip" data-ai-value="Elegant">✨ Elegant</button>
+        <button type="button" class="ai-chip" data-ai-value="Energetic">⚡ Energetic</button>
+      </div></div></div>
+      <div class="ai-step"><span>4</span><div><strong>Interests / theme</strong><input id="aiInterest" type="text" placeholder="Football, travel, cooking..."></div></div>
+      <div class="ai-step"><span>5</span><div><strong>Anything else? <em>optional</em></strong><textarea id="aiNotes" maxlength="500" placeholder="Turning 40, loves football and spending time with friends..."></textarea></div></div>
+
+      <div class="ai-photo-upload">
+        <div class="ai-photo-heading"><strong>📷 Add a photo</strong><span>Optional — AI can use it as inspiration.</span></div>
+        <label class="ai-upload-box" for="aiPhotoInput">
+          <input id="aiPhotoInput" type="file" accept="image/*">
+          <span id="aiUploadPreview">＋</span>
+          <strong id="aiUploadText">Upload a photo</strong>
+          <small>Use a photo of the birthday person</small>
+        </label>
       </div>
 
-      <div class="ai-field-grid">
-        <div class="editor-field">
-          <label for="aiName">Name</label>
-          <input id="aiName" type="text" maxlength="60" autocomplete="off">
-        </div>
-
-        <div class="editor-field">
-          <label for="aiRelationship">Relationship</label>
-          <select id="aiRelationship">
-            <option value="friend">👋 Friend</option>
-            <option value="family">👨‍👩‍👧 Family</option>
-            <option value="partner">❤️ Partner</option>
-            <option value="colleague">💼 Colleague</option>
-            <option value="other">🎉 Someone special</option>
-          </select>
-        </div>
-
-        <div class="editor-field">
-          <label for="aiMood">Mood</label>
-          <select id="aiMood">
-            <option value="fun">😂 Funny & playful</option>
-            <option value="warm">❤️ Warm & heartfelt</option>
-            <option value="elegant">✨ Elegant</option>
-            <option value="energetic">🎉 Energetic</option>
-            <option value="christian">🙏 Christian</option>
-          </select>
-        </div>
-
-        <div class="editor-field">
-          <label for="aiInterest">Interest / theme</label>
-          <input id="aiInterest" type="text" maxlength="80" placeholder="e.g. football, gaming, travel...">
-        </div>
-      </div>
-
-      <div class="editor-field">
-        <label for="aiExtra">Anything else?</label>
-        <textarea id="aiExtra" maxlength="180" rows="4" placeholder="e.g. He's turning 40 and loves watching football with friends."></textarea>
-      </div>
-
-      <div class="ai-studio-actions">
-        <button type="button" id="generateAiCard" class="primary-action">✨ Generate My Card</button>
-        <button type="button" id="closeAiCardStudioSecondary" class="secondary-action">← Back</button>
-      </div>
-      <p class="ai-prototype-note">V1.6 uses a smart local draft engine so you can test the complete AI card experience without an API key. The final AI model connection can be added later without changing the card library.</p>
+      <button type="button" id="generateAiCards" class="ai-generate-button">✨ Generate My AI Cards</button>
+      <p class="ai-demo-note" id="aiDemoNote">V1.6.1 preview mode — the secure AI image endpoint can be connected without changing this experience.</p>
     </div>
 
-    <div class="ai-result-panel">
-      <div class="preview-label">AI CARD PREVIEW</div>
-      <div id="aiCardPreviewEmpty" class="ai-empty-state">
-        <div>✨</div>
-        <strong>Your personalized card will appear here</strong>
-        <span>Choose your preferences and tap Generate My Card.</span>
+    <div class="ai-results-panel">
+      <div class="ai-results-header"><div><span class="section-kicker">AI GENERATED DESIGNS</span><h3 id="aiResultsTitle">Your unique concepts will appear here</h3><p id="aiResultsSubtitle">Give AI a few details and it will create several different visual directions.</p></div><button type="button" id="generateAiAgain" class="secondary-action">↻ Generate New</button></div>
+      <div id="aiGeneratedGrid" class="ai-generated-grid">
+        <div class="ai-empty-results"><div>✨</div><strong>Nothing here yet</strong><span>Your generated birthday artwork will appear here.</span></div>
       </div>
-      <div id="aiCardPreview" class="birthday-card-preview theme-celebration ai-card-preview" hidden>
-        <div class="card-theme-watermark" aria-hidden="true">✨</div>
-        <div id="aiPreviewTop" class="card-decoration card-decoration-top">🎈　🎈　🎈</div>
-        <div class="card-eyebrow">HAPPY BIRTHDAY</div>
-        <div id="aiPreviewName" class="preview-name">Birthday!</div>
-        <div id="aiPreviewMessage" class="preview-message"></div>
-        <div id="aiPreviewBottom" class="card-decoration card-decoration-bottom">🎂　🎁　🎉</div>
-      </div>
-      <div id="aiResultActions" class="ai-result-actions" hidden>
-        <button type="button" id="useAiCard" class="primary-action">🎨 Use This Card</button>
-        <button type="button" id="regenerateAiCard" class="secondary-action">↻ Regenerate</button>
+      <div class="ai-result-actions">
+        <button type="button" id="aiCustomizeSelected" class="secondary-action" disabled>✏️ Customize Selected Card</button>
+        <button type="button" id="aiUseSelected" class="primary-action" disabled>✓ Use This Card</button>
       </div>
     </div>
   </div>
 </section>
-
 
 <section id="cardEditor" class="card-editor-shell" hidden aria-labelledby="cardEditorTitle">
   <div class="editor-topbar">
@@ -292,7 +246,7 @@
 </div>
 
 
-<div class="app-version" aria-label="App version">V1.6</div>
+<div class="app-version" aria-label="App version">V1.5.3.2</div>
 
 </main>
 
@@ -374,6 +328,6 @@
   };
 </script>
 
-  <script src="app.js?v=1.6.0"></script>
+  <script src="app.js?v=1.6.1"></script>
 </body>
 </html>

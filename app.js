@@ -811,6 +811,7 @@ setTimeout(() => {
 
   function showHub(name) {
     currentBirthdayName = name || currentBirthdayName || "Birthday";
+    window.__birthdayCurrentName = currentBirthdayName;
     editor.hidden = true;
     hub.hidden = false;
     hub.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -849,11 +850,7 @@ setTimeout(() => {
       if (method === "template") {
         openEditor();
       } else if (method === "ai") {
-        if (window.BirthdayAssistantAI?.open) {
-          window.BirthdayAssistantAI.open(currentBirthdayName);
-        }
-      } else if (method === "photo") {
-        alert("📷 Photo card creation will be added in the next V1.5 step.");
+        return;
       }
       return;
     }
@@ -942,22 +939,6 @@ setTimeout(() => {
   window.BirthdayAssistantV151 = window.BirthdayAssistantV151 || {};
   window.BirthdayAssistantV151.showHub = showHub;
   window.BirthdayAssistantV151.openEditor = openEditor;
-  window.BirthdayAssistantV151.openDraft = function (draft) {
-    editingCardId = null;
-    currentBirthdayName = draft?.name || currentBirthdayName || "Birthday";
-    nameInput.value = currentBirthdayName;
-    messageInput.value = draft?.message || defaultMessage(currentBirthdayName);
-    const selected = designs.find(d => d.id === draft?.theme) || designs[0];
-    activeDesign = selected;
-    activeSet = designs.slice();
-    renderDesignOptions();
-    applyDesign();
-    updatePreview();
-    hub.hidden = true;
-    editor.hidden = false;
-    editor.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   window.BirthdayAssistantV151.openSavedCard = function (cardId) {
     const card = readSavedCards().find(item => item.id === cardId);
     if (!card) return;
@@ -976,153 +957,169 @@ setTimeout(() => {
   };
 })();
 
-/* V1.6 — AI Birthday Card Studio */
+/* =========================================================
+   V1.6.1 — AI Birthday Card Studio experience
+   ========================================================= */
 (function () {
+  const hub = document.getElementById("cardCreationHub");
   const studio = document.getElementById("aiCardStudio");
-  if (!studio) return;
+  if (!hub || !studio) return;
 
-  const nameInput = document.getElementById("aiName");
-  const relationship = document.getElementById("aiRelationship");
-  const mood = document.getElementById("aiMood");
-  const interest = document.getElementById("aiInterest");
-  const extra = document.getElementById("aiExtra");
-  const generate = document.getElementById("generateAiCard");
-  const close = document.getElementById("closeAiCardStudio");
-  const closeSecondary = document.getElementById("closeAiCardStudioSecondary");
-  const preview = document.getElementById("aiCardPreview");
-  const empty = document.getElementById("aiCardPreviewEmpty");
-  const resultActions = document.getElementById("aiResultActions");
-  const useCard = document.getElementById("useAiCard");
-  const regenerate = document.getElementById("regenerateAiCard");
-  const previewName = document.getElementById("aiPreviewName");
-  const previewMessage = document.getElementById("aiPreviewMessage");
-  const previewTop = document.getElementById("aiPreviewTop");
-  const previewBottom = document.getElementById("aiPreviewBottom");
-  const watermark = preview?.querySelector(".card-theme-watermark");
+  const aiName = document.getElementById("aiPersonName");
+  const aiInterest = document.getElementById("aiInterest");
+  const aiNotes = document.getElementById("aiNotes");
+  const photoInput = document.getElementById("aiPhotoInput");
+  const uploadPreview = document.getElementById("aiUploadPreview");
+  const uploadText = document.getElementById("aiUploadText");
+  const resultsGrid = document.getElementById("aiGeneratedGrid");
+  const resultsTitle = document.getElementById("aiResultsTitle");
+  const resultsSubtitle = document.getElementById("aiResultsSubtitle");
+  const generateButton = document.getElementById("generateAiCards");
+  const generateAgain = document.getElementById("generateAiAgain");
+  const useSelected = document.getElementById("aiUseSelected");
+  const customizeSelected = document.getElementById("aiCustomizeSelected");
+  const closeStudio = document.getElementById("closeAiStudio");
+  let selected = null;
+  let photoUrl = "";
+  let selectedConcept = null;
 
-  let currentBirthdayName = "Birthday";
-  let generatedDraft = null;
-
-  const themes = window.BirthdayCardDesigns || [];
-
-  function findTheme(id) {
-    return themes.find(theme => theme.id === id) || themes.find(theme => theme.id === "celebration") || themes[0];
+  function selectedChip(groupId) {
+    const chip = document.querySelector(`#${groupId} .ai-chip.active`);
+    return chip ? chip.dataset.aiValue : "Friend";
   }
 
-  function inferTheme(text, selectedMood) {
-    const value = `${text || ""}`.toLowerCase();
-    if (/football|soccer|sport|basketball|tennis|gym|running|champion|verein|fussball|fußball/.test(value)) return "sports";
-    if (/gaming|game|playstation|xbox|nintendo|gamer|controller|zocken/.test(value)) return "gaming";
-    if (/travel|trip|holiday|adventure|hiking|mountain|reisen|urlaub|wandern|abenteuer/.test(value)) return "adventure";
-    if (/space|planet|astronaut|star|universe|weltraum|sterne|raumfahrt/.test(value)) return "space";
-    if (/flower|garden|nature|blossom|pflanz|garten|blumen/.test(value)) return "flowers";
-    if (/unicorn|magic|fairy|princess|märchen|magie|einhorn/.test(value)) return "unicorn";
-    if (/rainbow|farben|color|colour/.test(value)) return "rainbow";
-    if (selectedMood === "elegant") return "elegant";
-    if (selectedMood === "christian") return "classic";
-    if (selectedMood === "fun") return "fun";
-    if (selectedMood === "energetic") return "celebration";
-    return "classic";
-  }
-
-  function generateMessage(name, relation, selectedMood, interestText, extraText) {
-    const n = name || "dir";
-    const subject = interestText ? ` und ganz besonders viel Freude bei ${interestText}` : "";
-    const extraLine = extraText ? ` ${extraText.trim().replace(/[.!?]+$/, "")}.` : "";
-
-    if (selectedMood === "christian") {
-      return `🎂 Alles Gute zum Geburtstag, ${n}! Möge Gott dich im neuen Lebensjahr segnen, begleiten und dir viel Freude, Frieden und Gesundheit schenken. 🙏🎉${extraLine}`.slice(0, 220);
-    }
-    if (selectedMood === "elegant") {
-      return `✨ Herzlichen Glückwunsch zum Geburtstag, ${n}! Ich wünsche dir ein wundervolles neues Lebensjahr voller besonderer Momente, Glück und Erfolg${subject}. 🥂${extraLine}`.slice(0, 220);
-    }
-    if (selectedMood === "fun") {
-      return `😂 Happy Birthday, ${n}! Bleib genauso großartig, hab einen fantastischen Tag und lass dich ordentlich feiern! 🎉${interestText ? ` Und natürlich: viel Spaß bei ${interestText}!` : ""}${extraLine}`.slice(0, 220);
-    }
-    if (selectedMood === "energetic") {
-      return `🎉 Happy Birthday, ${n}! Heute wird gefeiert! Ich wünsche dir jede Menge Energie, Glück, tolle Erlebnisse und ein fantastisches neues Lebensjahr! 🚀${interestText ? ` Besonders viel Spaß bei ${interestText}!` : ""}${extraLine}`.slice(0, 220);
-    }
-    if (relation === "partner") {
-      return `❤️ Alles Gute zum Geburtstag, ${n}! Ich wünsche dir einen wunderschönen Tag voller Liebe, Freude und ganz besonderer Momente. Auf ein großartiges neues Lebensjahr! 🎉${extraLine}`.slice(0, 220);
-    }
-    if (relation === "family") {
-      return `🎂 Alles Liebe zum Geburtstag, ${n}! Ich wünsche dir von Herzen Gesundheit, Glück und viele schöne Momente mit der Familie. Lass dich heute richtig feiern! ❤️${extraLine}`.slice(0, 220);
-    }
-    if (relation === "colleague") {
-      return `🎉 Herzlichen Glückwunsch zum Geburtstag, ${n}! Ich wünsche dir Gesundheit, Glück und einen tollen Tag – und natürlich weiterhin viel Erfolg bei allem, was vor dir liegt! 🥳${extraLine}`.slice(0, 220);
-    }
-    return `🎂 Alles Gute zum Geburtstag, ${n}! Ich wünsche dir einen wunderschönen Tag voller Freude, Glück und unvergesslicher Momente! 🎉${interestText ? ` Viel Spaß bei ${interestText}!` : ""}${extraLine}`.slice(0, 220);
-  }
-
-  function renderDraft(draft) {
-    const theme = findTheme(draft.theme);
-    preview.className = `birthday-card-preview ai-card-preview ${theme.className}`;
-    previewName.textContent = `${draft.name}!`;
-    previewMessage.textContent = draft.message;
-    previewTop.textContent = theme.top || theme.emoji;
-    previewBottom.textContent = theme.bottom || theme.emoji;
-    watermark.textContent = theme.watermark || theme.emoji;
-    empty.hidden = true;
-    preview.hidden = false;
-    resultActions.hidden = false;
-  }
-
-  function generateDraft() {
-    const name = (nameInput.value || currentBirthdayName || "Birthday").trim() || "Birthday";
-    const interestText = (interest.value || "").trim();
-    const extraText = (extra.value || "").trim();
-    const relation = relationship.value;
-    const selectedMood = mood.value;
-    const theme = findTheme(inferTheme(`${interestText} ${extraText}`, selectedMood));
-    generatedDraft = {
-      name,
-      message: generateMessage(name, relation, selectedMood, interestText, extraText),
-      theme: theme?.id || "celebration"
-    };
-    renderDraft(generatedDraft);
-  }
-
-  function open(name) {
-    currentBirthdayName = name || "Birthday";
-    nameInput.value = currentBirthdayName;
-    interest.value = "";
-    extra.value = "";
-    relationship.value = "friend";
-    mood.value = "fun";
-    generatedDraft = null;
-    empty.hidden = false;
-    preview.hidden = true;
-    resultActions.hidden = true;
-
-    document.getElementById("cardCreationHub").hidden = true;
-    document.getElementById("cardEditor").hidden = true;
+  function openStudio(name) {
+    hub.hidden = true;
     studio.hidden = false;
+    aiName.value = name || window.__birthdayCurrentName || "";
+    resultsGrid.innerHTML = `<div class="ai-empty-results"><div>✨</div><strong>Ready to create something unique</strong><span>Tell AI about the person — and optionally add a photo.</span></div>`;
+    selected = null;
+    selectedConcept = null;
+    useSelected.disabled = true;
+    customizeSelected.disabled = true;
     studio.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function closeStudio() {
-    studio.hidden = true;
-    if (window.BirthdayAssistantV151?.showHub) {
-      window.BirthdayAssistantV151.showHub(currentBirthdayName);
-    }
+  function makeConcepts() {
+    const name = (aiName.value || "Birthday Star").trim();
+    const relationship = selectedChip("aiRelationshipChoices");
+    const mood = selectedChip("aiMoodChoices");
+    const interest = (aiInterest.value || "celebration").trim();
+    const notes = (aiNotes.value || "").trim();
+    const variants = ["stadium", "cinematic", "poster", "collage", "illustration", "premium"].sort(() => Math.random() - .5);
+    const lines = [
+      ["CINEMATIC CELEBRATION", "A bold, cinematic birthday scene"],
+      ["PERSONAL STORY", "A visual story built around their world"],
+      ["SIGNATURE POSTER", "A premium birthday poster concept"],
+      ["MEMORY COLLAGE", "A collage inspired by the details you gave"],
+      ["PLAYFUL PORTRAIT", "A colorful illustrated celebration"],
+      ["PREMIUM EDITION", "A sophisticated, high-end birthday design"]
+    ];
+    return variants.map((variant, i) => ({
+      id: `ai-${Date.now()}-${i}`,
+      variant,
+      title: name,
+      subtitle: interest,
+      label: lines[i][0],
+      description: lines[i][1],
+      relationship,
+      mood,
+      notes,
+      photo: photoUrl
+    }));
   }
 
-  generate?.addEventListener("click", (event) => {
-    event.preventDefault();
-    generateDraft();
-  });
-  regenerate?.addEventListener("click", (event) => {
-    event.preventDefault();
-    generateDraft();
-  });
-  useCard?.addEventListener("click", (event) => {
-    event.preventDefault();
-    if (!generatedDraft) return;
-    studio.hidden = true;
-    window.BirthdayAssistantV151?.openDraft?.(generatedDraft);
-  });
-  close?.addEventListener("click", (event) => { event.preventDefault(); closeStudio(); });
-  closeSecondary?.addEventListener("click", (event) => { event.preventDefault(); closeStudio(); });
+  function renderConcepts(concepts) {
+    resultsGrid.innerHTML = concepts.map((c, i) => `
+      <button type="button" class="ai-concept ${i === 0 ? "selected" : ""}" data-concept-id="${c.id}" data-variant="${c.variant}">
+        <span class="ai-concept-art"></span>
+        ${c.photo ? `<img class="ai-concept-photo" src="${c.photo}" alt="Uploaded photo of ${escapeHtml(c.title)}">` : `<span class="ai-concept-no-photo">${c.variant === "stadium" ? "⚽" : c.variant === "premium" ? "✨" : c.variant === "collage" ? "🎂" : "🎉"}</span>`}
+        <span class="ai-concept-badge">✨ AI CONCEPT</span>
+        <span class="ai-concept-copy"><small>${escapeHtml(c.label)}</small><strong>Alles Gute zum Geburtstag, ${escapeHtml(c.title)}!</strong><span>${escapeHtml(c.description)} · ${escapeHtml(c.subtitle)}</span></span>
+      </button>`).join("");
+    selectedConcept = concepts[0];
+    useSelected.disabled = false;
+    customizeSelected.disabled = false;
+    resultsTitle.textContent = `${concepts.length} unique concepts for ${concepts[0].title}`;
+    resultsSubtitle.textContent = `Different visual directions based on ${concepts[0].relationship.toLowerCase()}, ${concepts[0].mood.toLowerCase()} and ${concepts[0].subtitle}.`;
+    resultsGrid.querySelectorAll(".ai-concept").forEach(btn => btn.addEventListener("click", () => {
+      resultsGrid.querySelectorAll(".ai-concept").forEach(x => x.classList.remove("selected"));
+      btn.classList.add("selected");
+      selectedConcept = concepts.find(c => c.id === btn.dataset.conceptId) || concepts[0];
+      useSelected.disabled = false;
+      customizeSelected.disabled = false;
+    }));
+  }
 
-  window.BirthdayAssistantAI = { open };
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
+  }
+
+  function generate() {
+    if (!aiName.value.trim()) aiName.value = "Birthday Star";
+    const concepts = makeConcepts();
+    renderConcepts(concepts);
+  }
+
+  document.querySelectorAll("#aiRelationshipChoices .ai-chip, #aiMoodChoices .ai-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const parent = chip.parentElement;
+      parent.querySelectorAll(".ai-chip").forEach(x => x.classList.remove("active"));
+      chip.classList.add("active");
+    });
+  });
+
+  photoInput?.addEventListener("change", () => {
+    const file = photoInput.files && photoInput.files[0];
+    if (!file) return;
+    if (photoUrl) URL.revokeObjectURL(photoUrl);
+    photoUrl = URL.createObjectURL(file);
+    uploadPreview.innerHTML = `<img src="${photoUrl}" alt="Selected photo">`;
+    uploadText.textContent = file.name.length > 28 ? file.name.slice(0,25) + "…" : file.name;
+  });
+
+  generateButton?.addEventListener("click", generate);
+  generateAgain?.addEventListener("click", generate);
+
+  function goToEditor() {
+    if (!selectedConcept) return;
+    const name = selectedConcept.title;
+    const message = `🎂 Alles Gute zum Geburtstag, ${name}! Ich wünsche dir einen großartigen Tag voller Freude, unvergesslicher Momente und ganz viel ${selectedConcept.subtitle}! 🎉`;
+    studio.hidden = true;
+    const editor = document.getElementById("cardEditor");
+    const nameInput = document.getElementById("cardName");
+    const messageInput = document.getElementById("cardMessage");
+    if (nameInput) nameInput.value = name;
+    if (messageInput) messageInput.value = message;
+    if (window.BirthdayAssistantV151?.openEditor) {
+      window.BirthdayAssistantV151.openEditor(name);
+    } else {
+      editor.hidden = false;
+      editor.scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+    setTimeout(() => {
+      const n = document.getElementById("cardName");
+      const m = document.getElementById("cardMessage");
+      if (n) n.value = name;
+      if (m) { m.value = message; m.dispatchEvent(new Event("input", { bubbles:true })); }
+    }, 40);
+  }
+
+  useSelected?.addEventListener("click", goToEditor);
+  customizeSelected?.addEventListener("click", goToEditor);
+
+  closeStudio?.addEventListener("click", () => {
+    studio.hidden = true;
+    hub.hidden = false;
+    hub.scrollIntoView({ behavior:"smooth", block:"start" });
+  });
+
+  const aiHubButton = document.querySelector('[data-creation-method="ai"]');
+  aiHubButton?.addEventListener("click", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    openStudio(window.__birthdayCurrentName || "");
+  });
+
+  window.BirthdayAIStudio = { open: openStudio, generate };
 })();
