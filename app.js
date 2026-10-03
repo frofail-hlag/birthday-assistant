@@ -243,7 +243,7 @@ function renderSavedCards() {
     article.dataset.cardId = card.id || "";
 
     const preview = document.createElement("div");
-    preview.className = "saved-card-preview birthday-card-preview " + design.className;
+    preview.className = "saved-card-preview birthday-card-preview " + design.className + (card.aiImageDataUrl ? " ai-art-active ai-saved-art" : "");
     preview.innerHTML = `
       <div class="card-theme-watermark" aria-hidden="true"></div>
       <div class="card-decoration card-decoration-top"></div>
@@ -252,6 +252,14 @@ function renderSavedCards() {
       <div class="preview-message"></div>
       <div class="card-decoration card-decoration-bottom"></div>
     `;
+    if (card.aiImageDataUrl) {
+      preview.classList.add("ai-saved-art");
+      const aiImg = document.createElement("img");
+      aiImg.className = "saved-card-ai-image";
+      aiImg.src = card.aiImageDataUrl;
+      aiImg.alt = `AI-generated birthday card for ${card.personName || "Birthday"}`;
+      preview.appendChild(aiImg);
+    }
     preview.querySelector(".preview-name").textContent = `${card.personName || "Birthday"}!`;
     preview.querySelector(".preview-message").textContent = card.message || "";
     preview.querySelector(".card-decoration-top").textContent = design.top || design.emoji;
@@ -348,8 +356,9 @@ function openCardPreview(card) {
   const full = document.getElementById("savedCardFullPreview");
   const title = document.getElementById("savedCardPreviewTitle");
   title.textContent = `${card.personName || "Birthday"} · ${design.name}`;
-  full.className = `birthday-card-preview saved-card-full-preview ${design.className}`;
+  full.className = `birthday-card-preview saved-card-full-preview ${design.className}${card.aiImageDataUrl ? " ai-art-active" : ""}`;
   full.innerHTML = `
+    ${card.aiImageDataUrl ? `<img class="preview-ai-image" src="${card.aiImageDataUrl}" alt="AI-generated birthday artwork">` : ""}
     <div class="card-theme-watermark" aria-hidden="true">${design.watermark || design.emoji}</div>
     <div class="card-decoration card-decoration-top">${design.top || design.emoji}</div>
     <div class="card-eyebrow">HAPPY BIRTHDAY</div>
@@ -371,6 +380,19 @@ function closeCardPreview() {
 async function shareSavedCard(card) {
   const text = `🎂 Birthday card for ${card.personName || "Birthday"}!\n\n${card.message || ""}`;
   try {
+    if (card.aiImageDataUrl && navigator.share && navigator.canShare) {
+      const response = await fetch(card.aiImageDataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `birthday-${(card.personName || "card").replace(/[^a-z0-9_-]+/gi, "-")}.jpg`, { type: blob.type || "image/jpeg" });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: `🎂 Birthday Card – ${card.personName || "Birthday"}`,
+          text,
+          files: [file]
+        });
+        return;
+      }
+    }
     if (navigator.share) {
       await navigator.share({
         title: `🎂 Birthday Card – ${card.personName || "Birthday"}`,
@@ -694,6 +716,7 @@ setTimeout(() => {
   const preview = document.getElementById("birthdayCardPreview");
   const previewName = document.getElementById("previewName");
   const previewMessage = document.getElementById("previewMessage");
+  const previewAIImage = document.getElementById("previewAIImage");
   const nameInput = document.getElementById("cardName");
   const messageInput = document.getElementById("cardMessage");
   const counter = document.getElementById("messageCounter");
@@ -725,6 +748,7 @@ setTimeout(() => {
   let activeDesign = designs[0];
   let currentBirthdayName = "";
   let editingCardId = null;
+  let currentAIStorageImageDataUrl = null;
 
   function shuffle(array) {
     const copy = array.slice();
@@ -787,7 +811,8 @@ setTimeout(() => {
 
   function applyDesign() {
     if (preview && activeDesign) {
-      preview.className = "birthday-card-preview " + activeDesign.className;
+      const aiActive = preview.classList.contains("ai-art-active");
+      preview.className = "birthday-card-preview " + activeDesign.className + (aiActive ? " ai-art-active" : "");
       const top = preview.querySelector(".card-decoration-top");
       const bottom = preview.querySelector(".card-decoration-bottom");
       const watermark = preview.querySelector(".card-theme-watermark");
@@ -819,6 +844,9 @@ setTimeout(() => {
 
   function openEditor(nameOverride) {
     editingCardId = null;
+    currentAIStorageImageDataUrl = null;
+    if (previewAIImage) { previewAIImage.hidden = true; previewAIImage.removeAttribute("src"); }
+    preview?.classList.remove("ai-art-active");
     if (nameOverride) currentBirthdayName = nameOverride;
     const name = currentBirthdayName || "Birthday";
     nameInput.value = name;
@@ -902,6 +930,7 @@ setTimeout(() => {
         personName: (nameInput.value || "").trim() || "Birthday",
         message: messageInput.value || "",
         theme: activeDesign ? activeDesign.id : "celebration",
+        aiImageDataUrl: previewAIImage && !previewAIImage.hidden ? (currentAIStorageImageDataUrl || previewAIImage.src) : null,
         createdAt: editingCardId
           ? (existing.find(item => item.id === editingCardId)?.createdAt || now)
           : now
@@ -934,21 +963,56 @@ setTimeout(() => {
     });
   }
 
+  function openAIEditor(nameOverride, imageDataUrl, messageOverride) {
+    editingCardId = null;
+    if (nameOverride) currentBirthdayName = nameOverride;
+    const name = currentBirthdayName || "Birthday";
+    nameInput.value = name;
+    messageInput.value = messageOverride || defaultMessage(name);
+    activeSet = designs.slice();
+    activeDesign = designs.find(d => d.id === "celebration") || designs[0];
+    renderDesignOptions();
+    applyDesign();
+    currentAIStorageImageDataUrl = window.__birthdayAIStorageImageDataUrl || imageDataUrl || null;
+    if (previewAIImage && imageDataUrl) {
+      previewAIImage.src = imageDataUrl;
+      previewAIImage.hidden = false;
+      preview.classList.add("ai-art-active");
+    }
+    updatePreview();
+    hub.hidden = true;
+    editor.hidden = false;
+    editor.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   // Expose a clean API for the reminder renderer.
   window.updateBirthdayCardPreview = updatePreview;
   window.BirthdayAssistantV151 = window.BirthdayAssistantV151 || {};
   window.BirthdayAssistantV151.showHub = showHub;
   window.BirthdayAssistantV151.openEditor = openEditor;
+  window.BirthdayAssistantV151.openAIEditor = openAIEditor;
   window.BirthdayAssistantV151.openSavedCard = function (cardId) {
     const card = readSavedCards().find(item => item.id === cardId);
     if (!card) return;
     currentBirthdayName = card.personName || "Birthday";
+    currentAIStorageImageDataUrl = card.aiImageDataUrl || null;
     nameInput.value = card.personName || "Birthday";
     messageInput.value = card.message || "";
     activeDesign = designs.find(d => d.id === card.theme) || designs[0];
     activeSet = designs.slice();
     renderDesignOptions();
     applyDesign();
+    if (previewAIImage) {
+      if (card.aiImageDataUrl) {
+        previewAIImage.src = card.aiImageDataUrl;
+        previewAIImage.hidden = false;
+        preview.classList.add("ai-art-active");
+      } else {
+        previewAIImage.hidden = true;
+        previewAIImage.removeAttribute("src");
+        preview.classList.remove("ai-art-active");
+      }
+    }
     updatePreview();
     editingCardId = card.id;
     hub.hidden = true;
@@ -958,13 +1022,14 @@ setTimeout(() => {
 })();
 
 /* =========================================================
-   V1.6.2 — AI Birthday Card Studio experience
+   V1.6.3 — Real AI Birthday Card Studio
    ========================================================= */
 (function () {
   const hub = document.getElementById("cardCreationHub");
   const studio = document.getElementById("aiCardStudio");
   if (!hub || !studio) return;
 
+  const AI_WEBHOOK_URL = "https://hook.eu1.make.com/qwyp4tyvxa3ef05kz2k8td114fpi5ra0";
   const aiName = document.getElementById("aiPersonName");
   const aiInterest = document.getElementById("aiInterest");
   const aiNotes = document.getElementById("aiNotes");
@@ -979,9 +1044,13 @@ setTimeout(() => {
   const useSelected = document.getElementById("aiUseSelected");
   const customizeSelected = document.getElementById("aiCustomizeSelected");
   const closeStudio = document.getElementById("closeAiStudio");
+  const demoNote = document.getElementById("aiDemoNote");
+
   let selected = null;
   let photoUrl = "";
+  let photoFile = null;
   let selectedConcept = null;
+  let generating = false;
 
   function selectedChip(groupId) {
     const chip = document.querySelector(`#${groupId} .ai-chip.active`);
@@ -993,6 +1062,8 @@ setTimeout(() => {
     studio.hidden = false;
     aiName.value = name || window.__birthdayCurrentName || "";
     resultsGrid.innerHTML = `<div class="ai-empty-results"><div>✨</div><strong>Ready to create something unique</strong><span>Tell AI about the person — and optionally add a photo.</span></div>`;
+    resultsTitle.textContent = "Your unique AI card will appear here";
+    resultsSubtitle.textContent = "Give AI a few details and it will create a personalized birthday artwork.";
     selected = null;
     selectedConcept = null;
     useSelected.disabled = true;
@@ -1000,65 +1071,164 @@ setTimeout(() => {
     studio.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function makeConcepts() {
-    const name = (aiName.value || "Birthday Star").trim();
-    const relationship = selectedChip("aiRelationshipChoices");
-    const mood = selectedChip("aiMoodChoices");
-    const interest = (aiInterest.value || "celebration").trim();
-    const notes = (aiNotes.value || "").trim();
-    const variants = ["stadium", "cinematic", "poster", "collage", "illustration", "premium"].sort(() => Math.random() - .5);
-    const lines = [
-      ["CINEMATIC CELEBRATION", "A bold, cinematic birthday scene"],
-      ["PERSONAL STORY", "A visual story built around their world"],
-      ["SIGNATURE POSTER", "A premium birthday poster concept"],
-      ["MEMORY COLLAGE", "A collage inspired by the details you gave"],
-      ["PLAYFUL PORTRAIT", "A colorful illustrated celebration"],
-      ["PREMIUM EDITION", "A sophisticated, high-end birthday design"]
-    ];
-    return variants.map((variant, i) => ({
-      id: `ai-${Date.now()}-${i}`,
-      variant,
-      title: name,
-      subtitle: interest,
-      label: lines[i][0],
-      description: lines[i][1],
-      relationship,
-      mood,
-      notes,
-      photo: photoUrl
-    }));
+  function setGeneratingState(isGenerating) {
+    generating = isGenerating;
+    generateButton.disabled = isGenerating;
+    generateAgain.disabled = isGenerating;
+    generateButton.textContent = isGenerating ? "⏳ Creating Your AI Card..." : "✨ Generate My AI Card";
+    generateAgain.textContent = isGenerating ? "⏳ Generating..." : "↻ Generate New";
   }
 
-  function renderConcepts(concepts) {
-    resultsGrid.innerHTML = concepts.map((c, i) => `
-      <button type="button" class="ai-concept ${i === 0 ? "selected" : ""}" data-concept-id="${c.id}" data-variant="${c.variant}">
-        <span class="ai-concept-art"></span>
-        ${c.photo ? `<img class="ai-concept-photo" src="${c.photo}" alt="Uploaded photo of ${escapeHtml(c.title)}">` : `<span class="ai-concept-no-photo">${c.variant === "stadium" ? "⚽" : c.variant === "premium" ? "✨" : c.variant === "collage" ? "🎂" : "🎉"}</span>`}
-        <span class="ai-concept-badge">✨ AI CONCEPT</span>
-        <span class="ai-concept-copy"><small>${escapeHtml(c.label)}</small><strong>Alles Gute zum Geburtstag, ${escapeHtml(c.title)}!</strong><span>${escapeHtml(c.description)} · ${escapeHtml(c.subtitle)}</span></span>
-      </button>`).join("");
-    selectedConcept = concepts[0];
-    useSelected.disabled = false;
-    customizeSelected.disabled = false;
-    resultsTitle.textContent = `${concepts.length} unique concepts for ${concepts[0].title}`;
-    resultsSubtitle.textContent = `Different visual directions based on ${concepts[0].relationship.toLowerCase()}, ${concepts[0].mood.toLowerCase()} and ${concepts[0].subtitle}.`;
-    resultsGrid.querySelectorAll(".ai-concept").forEach(btn => btn.addEventListener("click", () => {
-      resultsGrid.querySelectorAll(".ai-concept").forEach(x => x.classList.remove("selected"));
-      btn.classList.add("selected");
-      selectedConcept = concepts.find(c => c.id === btn.dataset.conceptId) || concepts[0];
+  function showLoading() {
+    resultsTitle.textContent = "Creating your personalized birthday artwork…";
+    resultsSubtitle.textContent = "AI is turning the details you provided into a real birthday card. This can take a few seconds.";
+    resultsGrid.innerHTML = `
+      <div class="ai-generating-state">
+        <div class="ai-generating-orb">✨</div>
+        <strong>Generating your card</strong>
+        <span>Creating a unique birthday artwork with GPT Image.</span>
+        <div class="ai-generating-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+      </div>`;
+    useSelected.disabled = true;
+    customizeSelected.disabled = true;
+  }
+
+  function showError(message) {
+    resultsTitle.textContent = "We couldn't create the card";
+    resultsSubtitle.textContent = "Check the details and try again.";
+    resultsGrid.innerHTML = `
+      <div class="ai-empty-results ai-error-results">
+        <div>⚠️</div>
+        <strong>AI generation failed</strong>
+        <span>${escapeHtml(message)}</span>
+      </div>`;
+    useSelected.disabled = true;
+    customizeSelected.disabled = true;
+  }
+
+  async function compressImageForStorage(dataUrl) {
+    try {
+      const image = new Image();
+      image.src = dataUrl;
+      await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = reject; });
+      const maxWidth = 900;
+      const scale = Math.min(1, maxWidth / image.naturalWidth);
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(image.naturalWidth * scale);
+      canvas.height = Math.round(image.naturalHeight * scale);
+      const ctx = canvas.getContext("2d", { alpha: false });
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL("image/jpeg", 0.84);
+    } catch (_) {
+      return dataUrl;
+    }
+  }
+
+  function renderGeneratedImage(dataUrl, details) {
+    const name = (details.name || "Birthday Star").trim();
+    selectedConcept = {
+      id: `ai-generated-${Date.now()}`,
+      title: name,
+      relationship: details.relationship,
+      mood: details.mood,
+      subtitle: details.interests || "birthday celebration",
+      notes: details.details || "",
+      photo: photoUrl,
+      imageDataUrl: dataUrl,
+      storageImageDataUrl: null
+    };
+    selected = selectedConcept;
+    selectedStorageImageDataUrl = dataUrl;
+    compressImageForStorage(dataUrl).then(compressed => {
+      selectedStorageImageDataUrl = compressed;
+      selectedConcept.storageImageDataUrl = compressed;
+      if (window.__birthdayAIImageDataUrl === dataUrl) window.__birthdayAIStorageImageDataUrl = compressed;
+    });
+
+    resultsTitle.textContent = `Your AI birthday card for ${name}`;
+    resultsSubtitle.textContent = "A real AI-generated artwork based on the details you entered.";
+    resultsGrid.innerHTML = `
+      <button type="button" class="ai-generated-image-card selected" id="aiGeneratedImageCard" aria-label="Select generated birthday card">
+        <img src="${dataUrl}" alt="AI-generated birthday card for ${escapeHtml(name)}">
+        <span class="ai-generated-badge">✨ AI GENERATED</span>
+        <span class="ai-generated-check">✓</span>
+      </button>`;
+
+    document.getElementById("aiGeneratedImageCard")?.addEventListener("click", () => {
+      selected = selectedConcept;
+      document.getElementById("aiGeneratedImageCard")?.classList.add("selected");
       useSelected.disabled = false;
       customizeSelected.disabled = false;
-    }));
+    });
+
+    useSelected.disabled = false;
+    customizeSelected.disabled = false;
   }
 
-  function escapeHtml(value) {
-    return String(value).replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
+  async function blobToDataUrl(blob) {
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Could not prepare the generated image."));
+      reader.readAsDataURL(blob);
+    });
   }
 
-  function generate() {
-    if (!aiName.value.trim()) aiName.value = "Birthday Star";
-    const concepts = makeConcepts();
-    renderConcepts(concepts);
+  async function generate() {
+    if (generating) return;
+
+    const name = (aiName.value || "").trim();
+    if (!name) {
+      aiName.focus();
+      resultsTitle.textContent = "Add the birthday person's name first";
+      resultsSubtitle.textContent = "The name is used to personalize the generated artwork.";
+      return;
+    }
+
+    const payload = {
+      name,
+      relationship: selectedChip("aiRelationshipChoices"),
+      mood: selectedChip("aiMoodChoices"),
+      interests: (aiInterest.value || "").trim(),
+      details: (aiNotes.value || "").trim()
+    };
+
+    setGeneratingState(true);
+    showLoading();
+    console.log("[Birthday Assistant] AI generation request", payload);
+
+    try {
+      const response = await fetch(AI_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const contentType = response.headers.get("content-type") || "";
+      if (!response.ok) {
+        let detail = `HTTP ${response.status}`;
+        try {
+          const text = await response.text();
+          if (text) detail += ` — ${text.slice(0, 180)}`;
+        } catch (_) {}
+        throw new Error(detail);
+      }
+
+      const blob = await response.blob();
+      if (!blob.type.startsWith("image/")) {
+        throw new Error(`Expected an image response, received ${contentType || blob.type || "unknown content"}.`);
+      }
+
+      const dataUrl = await blobToDataUrl(blob);
+      renderGeneratedImage(dataUrl, payload);
+      if (demoNote) demoNote.textContent = "Real AI generation is connected. Each generation uses OpenAI API credit.";
+      console.log("[Birthday Assistant] AI image received", { type: blob.type, size: blob.size });
+    } catch (error) {
+      console.error("AI generation failed:", error);
+      showError(error?.message || "Please try again.");
+    } finally {
+      setGeneratingState(false);
+    }
   }
 
   document.querySelectorAll("#aiRelationshipChoices .ai-chip, #aiMoodChoices .ai-chip").forEach(chip => {
@@ -1072,54 +1242,60 @@ setTimeout(() => {
   photoInput?.addEventListener("change", () => {
     const file = photoInput.files && photoInput.files[0];
     if (!file) return;
+    photoFile = file;
     if (photoUrl) URL.revokeObjectURL(photoUrl);
     photoUrl = URL.createObjectURL(file);
     uploadPreview.innerHTML = `<img src="${photoUrl}" alt="Selected photo">`;
     uploadText.textContent = file.name.length > 28 ? file.name.slice(0,25) + "…" : file.name;
+    if (demoNote) demoNote.textContent = "Photo selected. Text-based AI generation is connected; photo-aware generation is the next backend enhancement.";
   });
 
   generateButton?.addEventListener("click", generate);
   generateAgain?.addEventListener("click", generate);
 
   function goToEditor() {
-    if (!selectedConcept) return;
-    const name = selectedConcept.title;
-    const message = `🎂 Alles Gute zum Geburtstag, ${name}! Ich wünsche dir einen großartigen Tag voller Freude, unvergesslicher Momente und ganz viel ${selectedConcept.subtitle}! 🎉`;
+    if (!selectedConcept?.imageDataUrl) return;
+
+    const name = selectedConcept.title || "Birthday";
+    const message = `🎂 Alles Gute zum Geburtstag, ${name}! Ich wünsche dir einen wunderschönen Tag voller Freude, Glück und schöner Momente! 🎉`;
     studio.hidden = true;
+
     const editor = document.getElementById("cardEditor");
     const nameInput = document.getElementById("cardName");
     const messageInput = document.getElementById("cardMessage");
     if (nameInput) nameInput.value = name;
     if (messageInput) messageInput.value = message;
-    if (window.BirthdayAssistantV151?.openEditor) {
+
+    window.__birthdayAIImageDataUrl = selectedConcept.imageDataUrl;
+    window.__birthdayAIStorageImageDataUrl = selectedConcept.storageImageDataUrl || selectedStorageImageDataUrl || selectedConcept.imageDataUrl;
+    window.__birthdayAIImageMeta = {
+      name,
+      relationship: selectedConcept.relationship,
+      mood: selectedConcept.mood,
+      interests: selectedConcept.subtitle,
+      details: selectedConcept.notes
+    };
+
+    if (window.BirthdayAssistantV151?.openAIEditor) {
+      window.BirthdayAssistantV151.openAIEditor(name, selectedConcept.imageDataUrl, message);
+    } else if (window.BirthdayAssistantV151?.openEditor) {
       window.BirthdayAssistantV151.openEditor(name);
     } else {
       editor.hidden = false;
       editor.scrollIntoView({ behavior:"smooth", block:"start" });
     }
-    setTimeout(() => {
-      const n = document.getElementById("cardName");
-      const m = document.getElementById("cardMessage");
-      if (n) n.value = name;
-      if (m) { m.value = message; m.dispatchEvent(new Event("input", { bubbles:true })); }
-    }, 40);
   }
 
   useSelected?.addEventListener("click", goToEditor);
   customizeSelected?.addEventListener("click", goToEditor);
 
   closeStudio?.addEventListener("click", () => {
+    if (generating) return;
     studio.hidden = true;
     hub.hidden = false;
     hub.scrollIntoView({ behavior:"smooth", block:"start" });
   });
 
-  const aiHubButton = document.querySelector('[data-creation-method="ai"]');
-  aiHubButton?.addEventListener("click", event => {
-    event.preventDefault();
-    event.stopPropagation();
-    openStudio(window.__birthdayCurrentName || "");
-  });
-
   window.BirthdayAIStudio = { open: openStudio, generate };
 })();
+

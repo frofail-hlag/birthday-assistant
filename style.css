@@ -989,3 +989,41 @@ body {
   .ai-concept-copy strong { font-size: .9rem; }
   .ai-concept-copy span { font-size: .56rem; }
 }
+
+/* V1.6.3 — real AI generated artwork */
+.preview-ai-image { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:inherit; z-index:1; }
+.birthday-card-preview.ai-art-active .card-theme-watermark,
+.birthday-card-preview.ai-art-active .card-decoration,
+.birthday-card-preview.ai-art-active .card-eyebrow,
+.birthday-card-preview.ai-art-active .preview-name,
+.birthday-card-preview.ai-art-active .preview-message { position:relative; z-index:2; }
+.birthday-card-preview.ai-art-active .card-decoration-top,
+.birthday-card-preview.ai-art-active .card-decoration-bottom,
+.birthday-card-preview.ai-art-active .card-theme-watermark,
+.birthday-card-preview.ai-art-active .card-eyebrow { opacity:0; pointer-events:none; }
+.birthday-card-preview.ai-art-active .preview-name,
+.birthday-card-preview.ai-art-active .preview-message { display:none; }
+.ai-generated-image-card { position:relative; grid-column:1 / -1; width:100%; max-width:560px; justify-self:center; padding:0; border:3px solid transparent; border-radius:20px; overflow:hidden; background:#111827; box-shadow:0 16px 36px rgba(20,35,55,.18); cursor:pointer; }
+.ai-generated-image-card img { display:block; width:100%; max-height:620px; object-fit:contain; background:#0f172a; }
+.ai-generated-image-card.selected { border-color:#6851ed; box-shadow:0 0 0 3px rgba(104,81,237,.16),0 20px 42px rgba(20,35,55,.18); }
+.ai-generated-badge { position:absolute; top:12px; left:12px; padding:7px 10px; border-radius:999px; background:rgba(0,0,0,.52); color:#fff; backdrop-filter:blur(8px); font-size:.68rem; font-weight:800; letter-spacing:.05em; }
+.ai-generated-check { position:absolute; top:12px; right:12px; width:34px; height:34px; display:grid; place-items:center; border-radius:50%; background:#6851ed; color:#fff; font-weight:900; }
+.ai-generating-state { grid-column:1 / -1; min-height:420px; border:1px solid rgba(104,81,237,.12); border-radius:20px; display:grid; place-items:center; align-content:center; text-align:center; gap:10px; background:linear-gradient(145deg,#f8f6ff,#eef9ff); color:#24364a; }
+.ai-generating-orb { width:86px; height:86px; display:grid; place-items:center; border-radius:28px; background:linear-gradient(135deg,#4431d7,#8d43ee 55%,#4f9df6); color:#fff; font-size:42px; box-shadow:0 14px 35px rgba(87,61,211,.25); animation:aiPulse 1.6s ease-in-out infinite; }
+.ai-generating-state strong { font-size:1.05rem; }
+.ai-generating-state span { max-width:360px; font-size:.82rem; opacity:.65; }
+.ai-generating-dots { display:flex; gap:6px; margin-top:3px; }
+.ai-generating-dots i { width:7px; height:7px; border-radius:50%; background:#6851ed; animation:aiDot 1.1s infinite ease-in-out; }
+.ai-generating-dots i:nth-child(2) { animation-delay:.15s; }
+.ai-generating-dots i:nth-child(3) { animation-delay:.3s; }
+.ai-error-results { min-height:300px; }
+.saved-card-preview.ai-saved-art { position:relative; overflow:hidden; }
+.saved-card-ai-image { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:inherit; }
+@keyframes aiPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+@keyframes aiDot { 0%,60%,100%{transform:translateY(0);opacity:.45} 30%{transform:translateY(-5px);opacity:1} }
+@media (max-width:640px) { .ai-generated-image-card img { max-height:none; } .ai-generating-state { min-height:340px; } }
+.saved-card-preview.ai-saved-art .card-theme-watermark,
+.saved-card-preview.ai-saved-art .card-decoration,
+.saved-card-preview.ai-saved-art .card-eyebrow,
+.saved-card-preview.ai-saved-art .preview-name,
+.saved-card-preview.ai-saved-art .preview-message { opacity:0; pointer-events:none; }

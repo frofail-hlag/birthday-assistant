@@ -9,10 +9,10 @@
   <meta name="apple-mobile-web-app-title" content="Birthday Assistant">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="style.css?v=1.6.2">
+  <link rel="stylesheet" href="style.css?v=1.6.3">
   <title>Birthday Assistant</title>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <!-- Birthday Assistant V1.6.2 -->
+  <!-- Birthday Assistant V1.6.3 -->
 </head>
 <body>
   <main class="app">
@@ -139,7 +139,7 @@
 
   <div class="ai-studio-layout">
     <div class="ai-input-panel">
-      <div class="ai-step"><span>1</span><div><strong>Who is the card for?</strong><input id="aiPersonName" type="text" placeholder="Daniel"></div></div>
+      <div class="ai-step"><span>1</span><div><strong>Who is the card for?</strong><input id="aiPersonName" type="text" placeholder="Birthday person"></div></div>
       <div class="ai-step"><span>2</span><div><strong>Relationship</strong><div class="ai-chip-grid" id="aiRelationshipChoices">
         <button type="button" class="ai-chip active" data-ai-value="Friend">👥 Friend</button>
         <button type="button" class="ai-chip" data-ai-value="Family">👨‍👩‍👧 Family</button>
@@ -165,12 +165,12 @@
         </label>
       </div>
 
-      <button type="button" id="generateAiCards" class="ai-generate-button">✨ Generate My AI Cards</button>
-      <p class="ai-demo-note" id="aiDemoNote">V1.6.2 preview mode — the secure AI image endpoint can be connected without changing this experience.</p>
+      <button type="button" id="generateAiCards" class="ai-generate-button">✨ Generate My AI Card</button>
+      <p class="ai-demo-note" id="aiDemoNote">Real AI generation is connected. Each generation uses OpenAI API credit.</p>
     </div>
 
     <div class="ai-results-panel">
-      <div class="ai-results-header"><div><span class="section-kicker">AI GENERATED DESIGNS</span><h3 id="aiResultsTitle">Your unique concepts will appear here</h3><p id="aiResultsSubtitle">Give AI a few details and it will create several different visual directions.</p></div><button type="button" id="generateAiAgain" class="secondary-action">↻ Generate New</button></div>
+      <div class="ai-results-header"><div><span class="section-kicker">AI GENERATED CARD</span><h3 id="aiResultsTitle">Your unique concepts will appear here</h3><p id="aiResultsSubtitle">Give AI a few details and it will create one personalized birthday artwork.</p></div><button type="button" id="generateAiAgain" class="secondary-action">↻ Generate New</button></div>
       <div id="aiGeneratedGrid" class="ai-generated-grid">
         <div class="ai-empty-results"><div>✨</div><strong>Nothing here yet</strong><span>Your generated birthday artwork will appear here.</span></div>
       </div>
@@ -196,6 +196,7 @@
     <div class="card-preview-panel">
       <div class="preview-label">LIVE PREVIEW</div>
       <div id="birthdayCardPreview" class="birthday-card-preview theme-celebration">
+        <img id="previewAIImage" class="preview-ai-image" alt="AI-generated birthday artwork" hidden>
         <div class="card-theme-watermark" aria-hidden="true">🎉</div>
         <div class="card-decoration card-decoration-top">🎈　🎈　🎈</div>
         <div class="card-eyebrow">HAPPY BIRTHDAY</div>
@@ -246,7 +247,7 @@
 </div>
 
 
-<div class="app-version" aria-label="App version">V1.6.2</div>
+<div class="app-version" aria-label="App version">V1.6.3</div>
 
 </main>
 
