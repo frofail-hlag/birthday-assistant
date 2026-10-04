@@ -1,3 +1,14 @@
+
+// V1.6.3.3 — shared HTML escaping helper for AI-generated card content.
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 const $ = (id) => document.getElementById(id);
 
 const pushStatus = $("pushStatus");
@@ -1022,7 +1033,7 @@ setTimeout(() => {
 })();
 
 /* =========================================================
-   V1.6.3.2 — Real AI Birthday Card Studio
+   V1.6.3.3 — Real AI Birthday Card Studio
    ========================================================= */
 (function () {
   const hub = document.getElementById("cardCreationHub");
