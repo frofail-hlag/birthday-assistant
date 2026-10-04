@@ -1,5 +1,5 @@
 
-// V1.6.3.4 — shared HTML escaping helper for AI-generated card content.
+// V1.7.0 — shared HTML escaping helper for AI-generated card content.
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -1033,7 +1033,7 @@ setTimeout(() => {
 })();
 
 /* =========================================================
-   V1.6.3.4 — Real AI Birthday Card Studio
+   V1.7.0 — AI Birthday Card Studio / official class logo overlay
    ========================================================= */
 (function () {
   const hub = document.getElementById("cardCreationHub");
@@ -1116,6 +1116,47 @@ setTimeout(() => {
       </div>`;
     useSelected.disabled = true;
     customizeSelected.disabled = true;
+  }
+
+  async function applyAvaKerolosLogo(dataUrl) {
+    const LOGO_URL = "logos/avakerolos-sonntagsschule.png";
+    const image = new Image();
+    const logo = new Image();
+    image.src = dataUrl;
+    logo.src = LOGO_URL;
+
+    await Promise.all([
+      new Promise((resolve, reject) => { image.onload = resolve; image.onerror = () => reject(new Error("Could not load the generated birthday artwork.")); }),
+      new Promise((resolve, reject) => { logo.onload = resolve; logo.onerror = () => reject(new Error("Could not load the AvaKerolos logo.")); })
+    ]);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Could not prepare the final birthday card.");
+
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    // V1.7.0: one consistent, premium corner placement. The logo remains
+    // outside the AI generation prompt so the official artwork is never
+    // approximated by the image model.
+    const targetWidth = Math.round(canvas.width * 0.19);
+    const scale = targetWidth / logo.naturalWidth;
+    const targetHeight = Math.round(logo.naturalHeight * scale);
+    const margin = Math.max(18, Math.round(canvas.width * 0.028));
+    const x = canvas.width - targetWidth - margin;
+    const y = margin;
+
+    ctx.save();
+    ctx.shadowColor = "rgba(0, 0, 0, 0.24)";
+    ctx.shadowBlur = Math.max(8, Math.round(canvas.width * 0.012));
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = Math.max(3, Math.round(canvas.height * 0.006));
+    ctx.drawImage(logo, x, y, targetWidth, targetHeight);
+    ctx.restore();
+
+    return canvas.toDataURL("image/png");
   }
 
   async function compressImageForStorage(dataUrl) {
@@ -1233,7 +1274,8 @@ setTimeout(() => {
         throw new Error(`Expected an image response, received ${contentType || blob.type || "unknown content"}.`);
       }
 
-      const dataUrl = await blobToDataUrl(blob);
+      const rawDataUrl = await blobToDataUrl(blob);
+      const dataUrl = await applyAvaKerolosLogo(rawDataUrl);
       renderGeneratedImage(dataUrl, payload);
       if (demoNote) demoNote.textContent = "Real AI generation is connected. Each generation uses OpenAI API credit.";
       console.log("[Birthday Assistant] AI image received", { type: blob.type, size: blob.size });
