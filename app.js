@@ -1040,13 +1040,11 @@ setTimeout(() => {
   const studio = document.getElementById("aiCardStudio");
   if (!hub || !studio) return;
 
-  const AI_WEBHOOK_URL = "https://hook.eu1.make.com/qwyp4tyvxa3ef05kz2k8td114fpi5ra0";
+  const AI_WEBHOOK_URL = "https://hook.eu1.make.com/yean9bna11voj2lgk0cb7abnh59ne4ge";
   const aiName = document.getElementById("aiPersonName");
   const aiInterest = document.getElementById("aiInterest");
   const aiNotes = document.getElementById("aiNotes");
-  const photoInput = document.getElementById("aiPhotoInput");
-  const uploadPreview = document.getElementById("aiUploadPreview");
-  const uploadText = document.getElementById("aiUploadText");
+  const aiDesignDescription = document.getElementById("aiDesignDescription");
   const resultsGrid = document.getElementById("aiGeneratedGrid");
   const resultsTitle = document.getElementById("aiResultsTitle");
   const resultsSubtitle = document.getElementById("aiResultsSubtitle");
@@ -1058,8 +1056,6 @@ setTimeout(() => {
   const demoNote = document.getElementById("aiDemoNote");
 
   let selected = null;
-  let photoUrl = "";
-  let photoFile = null;
   let selectedConcept = null;
   let selectedStorageImageDataUrl = null;
   let generating = false;
@@ -1073,7 +1069,7 @@ setTimeout(() => {
     hub.hidden = true;
     studio.hidden = false;
     aiName.value = name || window.__birthdayCurrentName || "";
-    resultsGrid.innerHTML = `<div class="ai-empty-results"><div>✨</div><strong>Ready to create something unique</strong><span>Tell AI about the person — and optionally add a photo.</span></div>`;
+    resultsGrid.innerHTML = `<div class="ai-empty-results"><div>✨</div><strong>Ready to create something unique</strong><span>Tell AI about the person and optionally describe exactly how you want the card to look.</span></div>`;
     resultsTitle.textContent = "Your unique AI card will appear here";
     resultsSubtitle.textContent = "Give AI a few details and it will create a personalized birthday artwork.";
     selected = null;
@@ -1186,7 +1182,6 @@ setTimeout(() => {
       mood: details.mood,
       subtitle: details.interests || "birthday celebration",
       notes: details.details || "",
-      photo: photoUrl,
       imageDataUrl: dataUrl,
       storageImageDataUrl: null
     };
@@ -1239,13 +1234,15 @@ setTimeout(() => {
     }
 
     const userDetails = (aiNotes.value || "").trim();
+    const designDescription = (aiDesignDescription?.value || "").trim();
     const germanDefaultMessage = `🎂 Alles Gute zum Geburtstag, ${name}! Ich wünsche dir einen wunderschönen Tag voller Freude, Glück und schöner Momente! 🎉`;
     const payload = {
       name,
       relationship: selectedChip("aiRelationshipChoices"),
       mood: selectedChip("aiMoodChoices"),
       interests: (aiInterest.value || "").trim(),
-      details: `${userDetails}${userDetails ? "\n\n" : ""}LANGUAGE REQUIREMENT: Create the birthday card artwork and all visible text in natural German, even if the information above is written in English. Use this German birthday message as the main/default greeting: "${germanDefaultMessage}"`.trim()
+      details: `${userDetails}${userDetails ? "\n\n" : ""}LANGUAGE REQUIREMENT: Create the birthday card artwork and all visible text in natural German, even if the information above is written in English. Use this German birthday message as the main/default greeting: "${germanDefaultMessage}"`.trim(),
+      designDescription
     };
 
     setGeneratingState(true);
@@ -1293,17 +1290,6 @@ setTimeout(() => {
       parent.querySelectorAll(".ai-chip").forEach(x => x.classList.remove("active"));
       chip.classList.add("active");
     });
-  });
-
-  photoInput?.addEventListener("change", () => {
-    const file = photoInput.files && photoInput.files[0];
-    if (!file) return;
-    photoFile = file;
-    if (photoUrl) URL.revokeObjectURL(photoUrl);
-    photoUrl = URL.createObjectURL(file);
-    uploadPreview.innerHTML = `<img src="${photoUrl}" alt="Selected photo">`;
-    uploadText.textContent = file.name.length > 28 ? file.name.slice(0,25) + "…" : file.name;
-    if (demoNote) demoNote.textContent = "Photo selected. Text-based AI generation is connected; photo-aware generation is the next backend enhancement.";
   });
 
   generateButton?.addEventListener("click", generate);

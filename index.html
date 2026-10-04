@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Birthday Assistant">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="style.css?v=1.6.3.4">
+  <link rel="stylesheet" href="style.css?v=1.7.0">
   <title>Birthday Assistant</title>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <!-- Birthday Assistant V1.7.0 -->
@@ -117,7 +117,7 @@
       <span class="creation-option-icon">✨</span>
       <span class="creation-option-content">
         <strong>Use AI</strong>
-        <span>Describe the person, add a photo if you want, and let AI create something unique.</span>
+        <span>Describe the person and let AI create something unique.</span>
       </span>
       <span class="creation-option-arrow" aria-hidden="true">›</span>
     </button>
@@ -154,16 +154,7 @@
       </div></div></div>
       <div class="ai-step"><span>4</span><div><strong>Interests / theme</strong><input id="aiInterest" type="text" placeholder="Football, travel, cooking..."></div></div>
       <div class="ai-step"><span>5</span><div><strong>Anything else? <em>optional</em></strong><textarea id="aiNotes" maxlength="500" placeholder="Turning 40, loves football and spending time with friends..."></textarea></div></div>
-
-      <div class="ai-photo-upload">
-        <div class="ai-photo-heading"><strong>📷 Add a photo</strong><span>Optional — AI can use it as inspiration.</span></div>
-        <label class="ai-upload-box" for="aiPhotoInput">
-          <input id="aiPhotoInput" type="file" accept="image/*">
-          <span id="aiUploadPreview">＋</span>
-          <strong id="aiUploadText">Upload a photo</strong>
-          <small>Use a photo of the birthday person</small>
-        </label>
-      </div>
+      <div class="ai-step"><span>6</span><div><strong>💡 Describe your card <em>optional</em></strong><textarea id="aiDesignDescription" maxlength="500" placeholder="Colorful and energetic, with football elements, stadium lights and lots of confetti..."></textarea><small class="ai-field-hint">Tell AI how you want the card to look, feel or be composed.</small></div></div>
 
       <button type="button" id="generateAiCards" class="ai-generate-button">✨ Generate My AI Card</button>
       <p class="ai-demo-note" id="aiDemoNote">Real AI generation is connected. Each generation uses OpenAI API credit.</p>
@@ -329,6 +320,6 @@
   };
 </script>
 
-  <script src="app.js?v=1.6.3.4"></script>
+  <script src="app.js?v=1.7.0"></script>
 </body>
 </html>
