@@ -990,7 +990,7 @@ body {
   .ai-concept-copy span { font-size: .56rem; }
 }
 
-/* V1.6.3.3 — real AI generated artwork */
+/* V1.6.3.4 — real AI generated artwork */
 .preview-ai-image { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:inherit; z-index:1; }
 .birthday-card-preview.ai-art-active .card-theme-watermark,
 .birthday-card-preview.ai-art-active .card-decoration,

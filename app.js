@@ -1,5 +1,5 @@
 
-// V1.6.3.3 — shared HTML escaping helper for AI-generated card content.
+// V1.6.3.4 — shared HTML escaping helper for AI-generated card content.
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -1033,7 +1033,7 @@ setTimeout(() => {
 })();
 
 /* =========================================================
-   V1.6.3.3 — Real AI Birthday Card Studio
+   V1.6.3.4 — Real AI Birthday Card Studio
    ========================================================= */
 (function () {
   const hub = document.getElementById("cardCreationHub");
@@ -1197,12 +1197,14 @@ setTimeout(() => {
       return;
     }
 
+    const userDetails = (aiNotes.value || "").trim();
+    const germanDefaultMessage = `🎂 Alles Gute zum Geburtstag, ${name}! Ich wünsche dir einen wunderschönen Tag voller Freude, Glück und schöner Momente! 🎉`;
     const payload = {
       name,
       relationship: selectedChip("aiRelationshipChoices"),
       mood: selectedChip("aiMoodChoices"),
       interests: (aiInterest.value || "").trim(),
-      details: (aiNotes.value || "").trim()
+      details: `${userDetails}${userDetails ? "\n\n" : ""}LANGUAGE REQUIREMENT: Create the birthday card artwork and all visible text in natural German, even if the information above is written in English. Use this German birthday message as the main/default greeting: "${germanDefaultMessage}"`.trim()
     };
 
     setGeneratingState(true);
@@ -1265,6 +1267,49 @@ setTimeout(() => {
   generateButton?.addEventListener("click", generate);
   generateAgain?.addEventListener("click", generate);
 
+  async function saveGeneratedCardDirectly() {
+    if (!selectedConcept || !selectedConcept.imageDataUrl) return;
+
+    const name = (selectedConcept.title || aiName.value || "Birthday").trim() || "Birthday";
+    const message = `🎂 Alles Gute zum Geburtstag, ${name}! Ich wünsche dir einen wunderschönen Tag voller Freude, Glück und schöner Momente! 🎉`;
+
+    let imageData = selectedStorageImageDataUrl || selectedConcept.storageImageDataUrl;
+    if (!imageData) {
+      imageData = await compressImageForStorage(selectedConcept.imageDataUrl);
+    }
+
+    const existing = typeof readSavedCards === "function" ? readSavedCards() : [];
+    const saved = {
+      id: `card-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      personName: name,
+      message,
+      theme: "celebration",
+      aiImageDataUrl: imageData,
+      createdAt: Date.now()
+    };
+
+    if (typeof writeSavedCards === "function") {
+      writeSavedCards([saved, ...existing]);
+    }
+    if (typeof renderSavedCards === "function") {
+      renderSavedCards();
+    }
+
+    useSelected.disabled = true;
+    useSelected.textContent = "✅ Saved!";
+    setTimeout(() => {
+      studio.hidden = true;
+      hub.hidden = false;
+      if (typeof setMyCardsExpanded === "function") {
+        setMyCardsExpanded(true, { scroll: true });
+      } else {
+        document.getElementById("myCardsCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      useSelected.textContent = "💾 Save Card";
+      useSelected.disabled = false;
+    }, 650);
+  }
+
   function goToEditor() {
     if (!selectedConcept?.imageDataUrl) return;
 
@@ -1298,7 +1343,7 @@ setTimeout(() => {
     }
   }
 
-  useSelected?.addEventListener("click", goToEditor);
+  useSelected?.addEventListener("click", saveGeneratedCardDirectly);
   customizeSelected?.addEventListener("click", goToEditor);
 
   closeStudio?.addEventListener("click", () => {
