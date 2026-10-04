@@ -1022,7 +1022,7 @@ setTimeout(() => {
 })();
 
 /* =========================================================
-   V1.6.3 — Real AI Birthday Card Studio
+   V1.6.3.2 — Real AI Birthday Card Studio
    ========================================================= */
 (function () {
   const hub = document.getElementById("cardCreationHub");
