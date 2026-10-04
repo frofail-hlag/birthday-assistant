@@ -1,5 +1,5 @@
 
-// V1.7.0 — shared HTML escaping helper for AI-generated card content.
+// V1.8.0 — shared HTML escaping helper for AI-generated card content.
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -14,6 +14,9 @@ const $ = (id) => document.getElementById(id);
 const pushStatus = $("pushStatus");
 const enablePushButton = $("enablePush");
 const testLocalButton = $("testLocal");
+const notificationsPanel = $("notificationsPanel");
+const adminDiagnostics = $("adminDiagnostics");
+const adminDiagnosticsToggle = $("adminDiagnosticsToggle");
 const remindersList = $("remindersList");
 const noReminders = $("noReminders");
 const reminderCount = $("reminderCount");
@@ -23,6 +26,23 @@ const savedCardCount = $("savedCardCount");
 const myCardsCard = $("myCardsCard");
 const myCardsToggle = $("myCardsToggle");
 const myCardsContent = $("myCardsContent");
+
+// V1.8 Priority 1 — keep technical tools out of the normal user experience.
+// Admin mode is intentionally opt-in via ?admin=1 on the app URL.
+const isAdminMode = new URLSearchParams(window.location.search).get("admin") === "1";
+if (isAdminMode) {
+  document.body.classList.add("admin-mode");
+  if (testLocalButton) testLocalButton.hidden = false;
+}
+
+if (adminDiagnosticsToggle && adminDiagnostics) {
+  adminDiagnosticsToggle.addEventListener("click", () => {
+    const open = !adminDiagnostics.open;
+    adminDiagnostics.open = open;
+    adminDiagnosticsToggle.setAttribute("aria-expanded", String(open));
+    if (open) adminDiagnostics.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
 
 const CARDS_KEY = "birthdayAssistantCardsV1";
 
@@ -133,6 +153,21 @@ function renderReminders(reminders = cleanupExpiredReminders()) {
   const active = reminders.filter(r => Number(r.expiresAt) > Date.now());
   reminderCount.textContent = String(active.length);
   remindersList.innerHTML = "";
+
+  const infoTitle = $("birthdayCardsInfoTitle");
+  const infoText = $("birthdayCardsInfoText");
+  if (infoTitle && infoText) {
+    if (active.length === 1) {
+      infoTitle.textContent = "🎁 Ready to create a birthday card?";
+      infoText.textContent = `Choose ${active[0].name} above and turn the reminder into a personalized card.`;
+    } else if (active.length > 1) {
+      infoTitle.textContent = "🎁 Who are we celebrating?";
+      infoText.textContent = "Choose a birthday reminder above to start a personalized card.";
+    } else {
+      infoTitle.textContent = "🎁 Your next birthday card starts here";
+      infoText.textContent = "When a birthday reminder arrives, choose it above to create a personalized card.";
+    }
+  }
 
   if (!active.length) {
     noReminders.hidden = false;
@@ -511,9 +546,10 @@ async function updateDiagnostics() {
 
 function setEnabledState() {
   setStatus("✅ Push Notifications Enabled");
-  enablePushButton.textContent = "✅ Push Notifications Enabled";
+  enablePushButton.textContent = "✅ Enabled";
   enablePushButton.disabled = true;
   markPushSetupCompleted();
+  if (notificationsPanel) notificationsPanel.classList.add("is-enabled");
 }
 
 async function waitForExistingSubscription(timeoutMs = 8000) {
@@ -535,6 +571,7 @@ async function updatePushState({ allowWaiting = true } = {}) {
   const OneSignal = window.__oneSignal;
 
   if (!OneSignal) {
+    notificationsPanel?.classList.remove("is-enabled");
     setStatus("⏳ Connecting to push service...");
     enablePushButton.disabled = true;
     return;
@@ -550,6 +587,7 @@ async function updatePushState({ allowWaiting = true } = {}) {
     }
 
     const permission = "Notification" in window ? Notification.permission : "unsupported";
+    notificationsPanel?.classList.remove("is-enabled");
 
     if (hasCompletedPushSetup() && permission === "granted") {
       setStatus("🔄 Restoring notification connection...");
@@ -605,7 +643,7 @@ window.addEventListener("onesignal-ready", async () => {
 
 window.addEventListener("onesignal-error", async (event) => {
   const error = event.detail;
-  setStatus("⚠️ OneSignal setup failed. See Diagnostics below.");
+  setStatus("⚠️ Notification setup needs attention. Please try again.");
   diag("diagSdk", "Setup failed");
   logDiag("OneSignal setup error: " + (error?.message || String(error)));
   await inspectServiceWorkers();
@@ -651,7 +689,7 @@ enablePushButton.addEventListener("click", async () => {
   } catch (error) {
     console.error("Push enable failed:", error);
     logDiag("Push enable error: " + (error?.message || String(error)));
-    setStatus("⚠️ Push setup failed. See Diagnostics below.");
+    setStatus("⚠️ Push setup failed. Please try again.");
     enablePushButton.disabled = false;
     await updateDiagnostics();
   }
@@ -1033,7 +1071,7 @@ setTimeout(() => {
 })();
 
 /* =========================================================
-   V1.7.0 — AI Birthday Card Studio / official class logo overlay
+   V1.8.0 — AI Birthday Card Studio / official class logo overlay
    ========================================================= */
 (function () {
   const hub = document.getElementById("cardCreationHub");
@@ -1134,7 +1172,7 @@ setTimeout(() => {
 
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-    // V1.7.0: one consistent, premium corner placement. The logo remains
+    // V1.8.0: one consistent, premium corner placement. The logo remains
     // outside the AI generation prompt so the official artwork is never
     // approximated by the image model.
     const targetWidth = Math.round(canvas.width * 0.19);

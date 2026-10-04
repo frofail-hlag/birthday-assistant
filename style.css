@@ -1010,3 +1010,137 @@ body {
 .saved-card-preview.ai-saved-art .card-eyebrow,
 .saved-card-preview.ai-saved-art .preview-name,
 .saved-card-preview.ai-saved-art .preview-message { opacity:0; pointer-events:none; }
+
+
+/* =========================================================
+   V1.8.0 Priority 1 — UX cleanup / admin-only diagnostics
+   ========================================================= */
+.notification-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(100%, 760px);
+  margin: -4px auto 2px;
+  padding: 8px 10px;
+  border: 1px solid rgba(11,31,51,.08);
+  border-radius: 999px;
+  background: rgba(255,255,255,.82);
+  box-shadow: 0 8px 20px rgba(11,31,51,.07);
+  backdrop-filter: blur(10px);
+}
+.notification-strip-icon {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #eef4f8;
+  font-size: 16px;
+}
+.notification-strip-copy { min-width: 0; flex: 1; display: grid; gap: 1px; }
+.notification-strip-copy strong { font-size: .82rem; color: #0b1f33; }
+.notification-strip-copy span { font-size: .72rem; color: #617080; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.notification-enable {
+  width: auto;
+  min-width: 78px;
+  margin: 0;
+  padding: 8px 11px;
+  border-radius: 999px;
+  font-size: .78rem;
+  background: #0b1f33;
+}
+.notification-strip.is-enabled { display: none; }
+.notification-strip[hidden] { display: none !important; }
+.admin-only-control { width: auto; margin: 0; padding: 7px 9px; font-size: .72rem; background: #e9eef3; color: #0b1f33; }
+.admin-diagnostics { display: none; }
+body.admin-mode .admin-diagnostics { display: block; }
+body.admin-mode .admin-diagnostics-toggle { display: grid !important; }
+.admin-diagnostics-toggle {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  display: none;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  color: white;
+  font-size: 15px;
+  box-shadow: none;
+}
+.admin-diagnostics-toggle:hover { background: rgba(255,255,255,.20); transform: none; }
+
+.birthday-cards-info {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 18px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.birthday-cards-info::after {
+  content: "";
+  position: absolute;
+  inset: auto -40px -65px auto;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(99,102,241,.08);
+}
+.birthday-cards-info-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: linear-gradient(135deg,#fff7e8,#eef5ff);
+  font-size: 25px;
+  box-shadow: 0 8px 18px rgba(20,35,55,.08);
+}
+.birthday-cards-info-copy { min-width: 0; }
+.birthday-cards-info-copy strong { display:block; color:#0b1f33; font-size:.98rem; margin-bottom:2px; }
+.birthday-cards-info-copy p { margin:0; font-size:.82rem; color:#586979; }
+.birthday-cards-info-arrow { font-size:1.35rem; opacity:.45; z-index:1; }
+
+/* The two creation choices are intentionally more like selectable feature cards. */
+.card-creation-hub { padding: 22px; }
+.card-creation-options { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; margin-top: 20px; }
+.creation-option {
+  min-height: 178px;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 22px 18px 18px;
+  border: 1px solid rgba(20,35,55,.10);
+  border-radius: 22px;
+  background: linear-gradient(145deg,#ffffff,#f7fafc);
+  box-shadow: 0 10px 24px rgba(20,35,55,.08);
+}
+.creation-option:hover,
+.creation-option:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px rgba(20,35,55,.13);
+  border-color: rgba(20,35,55,.18);
+}
+.creation-option-icon { width:58px; height:58px; border-radius:18px; font-size:1.85rem; background:linear-gradient(135deg,#eef3f8,#f7f9fb); }
+.creation-option-content { gap:5px; }
+.creation-option-content strong { color:#0b1f33; font-size:1.08rem; }
+.creation-option-content span { color:#111827; opacity:1; font-size:.87rem; line-height:1.45; max-width:250px; }
+.creation-option-arrow { font-size:1.35rem; opacity:.5; transform: rotate(90deg); }
+.creation-option-ai { background:linear-gradient(145deg,#fbf9ff,#f2f7ff); border-color:rgba(91,66,214,.18); }
+
+@media (max-width:640px) {
+  .card-creation-options { grid-template-columns: 1fr; }
+  .creation-option { min-height: 150px; }
+  .notification-strip { border-radius: 18px; }
+  .notification-strip-copy span { white-space: normal; }
+  .birthday-cards-info { grid-template-columns: auto 1fr; }
+  .birthday-cards-info-arrow { display:none; }
+}

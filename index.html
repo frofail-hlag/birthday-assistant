@@ -9,10 +9,10 @@
   <meta name="apple-mobile-web-app-title" content="Birthday Assistant">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="style.css?v=1.7.0">
+  <link rel="stylesheet" href="style.css?v=1.8.0">
   <title>Birthday Assistant</title>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <!-- Birthday Assistant V1.7.0 -->
+  <!-- Birthday Assistant V1.8.0 -->
 </head>
 <body>
   <main class="app">
@@ -20,7 +20,18 @@
       <div class="cake">🎂</div>
       <h1>Birthday Assistant</h1>
       <p>Never miss an important birthday.</p>
+      <button type="button" id="adminDiagnosticsToggle" class="admin-diagnostics-toggle" hidden aria-controls="adminDiagnostics" aria-expanded="false" title="Admin diagnostics">⚙️</button>
     </header>
+
+    <section class="notification-strip" id="notificationsPanel" aria-live="polite">
+      <div class="notification-strip-icon" aria-hidden="true">🔔</div>
+      <div class="notification-strip-copy">
+        <strong>Birthday notifications</strong>
+        <span id="pushStatus">⏳ Preparing push notifications...</span>
+      </div>
+      <button id="enablePush" type="button" class="notification-enable">🔔 Enable</button>
+      <button id="testLocal" type="button" class="admin-only-control" hidden>🧪 Test</button>
+    </section>
 
     <section class="card reminders-card dashboard-wide" id="remindersCard">
       <div class="section-heading">
@@ -66,14 +77,7 @@
       </div>
     </section>
 
-    <section class="card dashboard-panel notifications-panel">
-      <h2>🔔 Notifications</h2>
-      <p id="pushStatus">⏳ Preparing push notifications...</p>
-      <button id="enablePush">🔔 Enable Push Notifications</button>
-      <button id="testLocal" class="secondary">🧪 Test Local Notification</button>
-    </section>
-
-    <details class="card diagnostics dashboard-panel">
+    <details class="diagnostics admin-diagnostics" id="adminDiagnostics">
       <summary>🛠️ Technical Diagnostics</summary>
       <div class="diag-content">
         <div class="diag-row"><span>OneSignal SDK</span><strong id="diagSdk">Checking...</strong></div>
@@ -90,8 +94,13 @@
       </div>
     </details>
 
-    <section class="card dashboard-wide birthday-cards-info">
-      <p>Choose a birthday reminder above to create a personalized card.</p>
+    <section class="card dashboard-wide birthday-cards-info" id="birthdayCardsInfo">
+      <div class="birthday-cards-info-icon" aria-hidden="true">🎁</div>
+      <div class="birthday-cards-info-copy">
+        <strong id="birthdayCardsInfoTitle">Ready to celebrate?</strong>
+        <p id="birthdayCardsInfoText">Choose a birthday reminder above and turn it into a personalized card.</p>
+      </div>
+      <span class="birthday-cards-info-arrow" aria-hidden="true">↓</span>
     </section>
   
 <section id="cardCreationHub" class="card-creation-hub" hidden aria-labelledby="cardCreationTitle">
@@ -238,7 +247,7 @@
 </div>
 
 
-<div class="app-version" aria-label="App version">V1.7.0</div>
+<div class="app-version" aria-label="App version">V1.8.0</div>
 
 </main>
 
@@ -320,6 +329,6 @@
   };
 </script>
 
-  <script src="app.js?v=1.7.0"></script>
+  <script src="app.js?v=1.8.0"></script>
 </body>
 </html>
