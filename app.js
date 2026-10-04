@@ -1296,6 +1296,16 @@ setTimeout(() => {
     hub.scrollIntoView({ behavior:"smooth", block:"start" });
   });
 
+  // Connect the creation hub's "Use AI" option to the real AI Studio.
+  // This must be wired explicitly because the shared creation-button handler
+  // intentionally does not navigate for the AI method.
+  const aiHubButton = document.querySelector('[data-creation-method="ai"]');
+  aiHubButton?.addEventListener("click", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    openStudio(window.__birthdayCurrentName || "");
+  });
+
   window.BirthdayAIStudio = { open: openStudio, generate };
 })();
 
