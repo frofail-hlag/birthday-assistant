@@ -1050,6 +1050,7 @@ setTimeout(() => {
   let photoUrl = "";
   let photoFile = null;
   let selectedConcept = null;
+  let selectedStorageImageDataUrl = null;
   let generating = false;
 
   function selectedChip(groupId) {
