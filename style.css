@@ -1,7 +1,7 @@
 * { box-sizing:border-box; }
 body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#f4f7fa; color:#0b1f33; }
 .app { max-width:680px; margin:0 auto; padding:24px 18px 40px; }
-.hero { text-align:center; padding:18px 10px 24px; }
+.hero { position:relative; text-align:center; padding:18px 10px 24px; }
 .cake { font-size:52px; }
 h1 { margin:8px 0; font-size:30px; }
 .hero p { margin:0; color:#5d6b78; }
@@ -13,7 +13,7 @@ h1 { margin:8px 0; font-size:30px; }
 .section-subtitle { margin:0; font-size:14px; }
 .count-badge { min-width:30px; height:30px; padding:5px 9px; border-radius:999px; background:#e9eef3; color:#0b1f33; font-weight:700; text-align:center; }
 .reminders-list { display:grid; gap:12px; margin-top:16px; }
-.reminder-item { display:flex; gap:13px; align-items:flex-start; padding:14px; border:1px solid #e7edf2; border-radius:14px; background:#fbfcfd; }
+.reminder-item { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:13px; align-items:center; padding:14px; border:1px solid #e7edf2; border-radius:14px; background:#fbfcfd; }
 .reminder-icon { width:42px; height:42px; display:grid; place-items:center; flex:0 0 42px; border-radius:12px; background:#eef3f7; font-size:22px; }
 .reminder-content { min-width:0; }
 .reminder-content h3 { margin:0 0 5px; font-size:17px; }
@@ -143,8 +143,12 @@ details.diagnostics[open] summary::after { content:"−"; }
 }
 
 .create-birthday-card-button {
-  width: 100%;
-  margin-top: 14px;
+  width: auto;
+  min-width: 210px;
+  margin: 0;
+  padding: 12px 18px;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 .v151-coming-soon {
@@ -862,6 +866,15 @@ body {
 .creation-option-ai { background:linear-gradient(100deg,#fbf9ff,#f0f7ff); border-color:rgba(91,66,214,.16); }
 
 @media (max-width:900px) { .ai-studio-layout { grid-template-columns:1fr; } }
+@media (max-width:760px) {
+  .reminder-item { grid-template-columns:auto minmax(0,1fr); }
+  .create-birthday-card-button { grid-column:2; width:100%; min-width:0; margin-top:2px; }
+}
+@media (max-width:640px) {
+  .hero-tools { top:6px; right:4px; gap:6px; }
+  .top-tool-button { width:36px; height:36px; min-width:36px; font-size:16px; }
+  .notification-tool .tool-status-dot { top:2px; right:2px; }
+}
 @media (max-width:640px) { .ai-studio-topbar { align-items:flex-start; } .ai-powered-badge { display:none; } .ai-generated-grid { grid-template-columns:repeat(2,1fr); } .ai-results-header { flex-direction:column; } .ai-results-header .secondary-action { width:100%; } }
 @media (max-width:430px) { .ai-card-studio { padding:15px; border-radius:22px; } .ai-generated-grid { grid-template-columns:1fr 1fr; } .ai-concept-copy strong { font-size:1rem; } }
 
@@ -1004,6 +1017,15 @@ body {
 .saved-card-ai-image { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:inherit; }
 @keyframes aiPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
 @keyframes aiDot { 0%,60%,100%{transform:translateY(0);opacity:.45} 30%{transform:translateY(-5px);opacity:1} }
+@media (max-width:760px) {
+  .reminder-item { grid-template-columns:auto minmax(0,1fr); }
+  .create-birthday-card-button { grid-column:2; width:100%; min-width:0; margin-top:2px; }
+}
+@media (max-width:640px) {
+  .hero-tools { top:6px; right:4px; gap:6px; }
+  .top-tool-button { width:36px; height:36px; min-width:36px; font-size:16px; }
+  .notification-tool .tool-status-dot { top:2px; right:2px; }
+}
 @media (max-width:640px) { .ai-generated-image-card img { max-height:none; } .ai-generating-state { min-height:340px; } }
 .saved-card-preview.ai-saved-art .card-theme-watermark,
 .saved-card-preview.ai-saved-art .card-decoration,
@@ -1013,66 +1035,62 @@ body {
 
 
 /* =========================================================
-   V1.8.0 Priority 1 — UX cleanup / admin-only diagnostics
+   V1.8.0 Priority 1 — UX cleanup / compact top tools
    ========================================================= */
-.notification-strip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: min(100%, 760px);
-  margin: -4px auto 2px;
-  padding: 8px 10px;
-  border: 1px solid rgba(11,31,51,.08);
-  border-radius: 999px;
-  background: rgba(255,255,255,.82);
-  box-shadow: 0 8px 20px rgba(11,31,51,.07);
-  backdrop-filter: blur(10px);
+.notification-strip { display:none !important; }
+.notification-strip[hidden] { display:none !important; }
+.hero-tools {
+  position:absolute;
+  top:10px;
+  right:8px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  z-index:5;
 }
-.notification-strip-icon {
-  width: 32px;
-  height: 32px;
-  flex: 0 0 32px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #eef4f8;
-  font-size: 16px;
+.top-tool-button {
+  position:relative;
+  width:40px;
+  height:40px;
+  min-width:40px;
+  margin:0;
+  padding:0;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:50%;
+  background:rgba(255,255,255,.12);
+  color:#fff;
+  font-size:18px;
+  line-height:1;
+  box-shadow:0 6px 16px rgba(0,0,0,.12);
+  backdrop-filter:blur(10px);
 }
-.notification-strip-copy { min-width: 0; flex: 1; display: grid; gap: 1px; }
-.notification-strip-copy strong { font-size: .82rem; color: #0b1f33; }
-.notification-strip-copy span { font-size: .72rem; color: #617080; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.notification-enable {
-  width: auto;
-  min-width: 78px;
-  margin: 0;
-  padding: 8px 11px;
-  border-radius: 999px;
-  font-size: .78rem;
-  background: #0b1f33;
+.top-tool-button:hover { transform:translateY(-1px); background:rgba(255,255,255,.20); }
+.top-tool-button:focus-visible { outline:3px solid rgba(255,255,255,.5); outline-offset:2px; }
+.notification-tool .tool-status-dot {
+  position:absolute;
+  top:3px;
+  right:3px;
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  border:2px solid #12334d;
+  background:#ef4444;
+  box-shadow:0 0 0 2px rgba(239,68,68,.18);
 }
-.notification-strip.is-enabled { display: none; }
-.notification-strip[hidden] { display: none !important; }
-.admin-only-control { width: auto; margin: 0; padding: 7px 9px; font-size: .72rem; background: #e9eef3; color: #0b1f33; }
-.admin-diagnostics { display: none; }
-body.admin-mode .admin-diagnostics { display: block; }
-body.admin-mode .admin-diagnostics-toggle { display: grid !important; }
-.admin-diagnostics-toggle {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 34px;
-  height: 34px;
-  margin: 0;
-  padding: 0;
-  display: none;
-  place-items: center;
-  border-radius: 50%;
-  background: rgba(255,255,255,.12);
-  color: white;
-  font-size: 15px;
-  box-shadow: none;
+.notification-tool.is-enabled .tool-status-dot {
+  background:#22c55e;
+  box-shadow:0 0 0 2px rgba(34,197,94,.18);
 }
-.admin-diagnostics-toggle:hover { background: rgba(255,255,255,.20); transform: none; }
+.notification-tool.is-checking .tool-status-dot {
+  background:#f59e0b;
+  box-shadow:0 0 0 2px rgba(245,158,11,.18);
+}
+.notification-tool:disabled { opacity:1; cursor:pointer; }
+.admin-diagnostics { display:none; margin-top:14px; }
+.admin-diagnostics[open] { display:block; }
+.admin-diagnostics-toggle { display:grid !important; }
 
 .birthday-cards-info {
   position: relative;
@@ -1136,6 +1154,15 @@ body.admin-mode .admin-diagnostics-toggle { display: grid !important; }
 .creation-option-arrow { font-size:1.35rem; opacity:.5; transform: rotate(90deg); }
 .creation-option-ai { background:linear-gradient(145deg,#fbf9ff,#f2f7ff); border-color:rgba(91,66,214,.18); }
 
+@media (max-width:760px) {
+  .reminder-item { grid-template-columns:auto minmax(0,1fr); }
+  .create-birthday-card-button { grid-column:2; width:100%; min-width:0; margin-top:2px; }
+}
+@media (max-width:640px) {
+  .hero-tools { top:6px; right:4px; gap:6px; }
+  .top-tool-button { width:36px; height:36px; min-width:36px; font-size:16px; }
+  .notification-tool .tool-status-dot { top:2px; right:2px; }
+}
 @media (max-width:640px) {
   .card-creation-options { grid-template-columns: 1fr; }
   .creation-option { min-height: 150px; }

@@ -20,16 +20,14 @@
       <div class="cake">🎂</div>
       <h1>Birthday Assistant</h1>
       <p>Never miss an important birthday.</p>
-      <button type="button" id="adminDiagnosticsToggle" class="admin-diagnostics-toggle" hidden aria-controls="adminDiagnostics" aria-expanded="false" title="Admin diagnostics">⚙️</button>
+      <div class="hero-tools" aria-label="App tools">
+        <button type="button" id="enablePush" class="top-tool-button notification-tool needs-attention" aria-label="Enable birthday notifications" title="Birthday notifications">🔔<span class="tool-status-dot" aria-hidden="true"></span></button>
+        <button type="button" id="adminDiagnosticsToggle" class="top-tool-button diagnostics-tool" aria-controls="adminDiagnostics" aria-expanded="false" title="Technical diagnostics" aria-label="Technical diagnostics">⚙️</button>
+      </div>
     </header>
 
-    <section class="notification-strip" id="notificationsPanel" aria-live="polite">
-      <div class="notification-strip-icon" aria-hidden="true">🔔</div>
-      <div class="notification-strip-copy">
-        <strong>Birthday notifications</strong>
-        <span id="pushStatus">⏳ Preparing push notifications...</span>
-      </div>
-      <button id="enablePush" type="button" class="notification-enable">🔔 Enable</button>
+    <section class="notification-strip" id="notificationsPanel" aria-live="polite" hidden>
+      <span id="pushStatus">⏳ Preparing push notifications...</span>
       <button id="testLocal" type="button" class="admin-only-control" hidden>🧪 Test</button>
     </section>
 

@@ -27,13 +27,8 @@ const myCardsCard = $("myCardsCard");
 const myCardsToggle = $("myCardsToggle");
 const myCardsContent = $("myCardsContent");
 
-// V1.8 Priority 1 — keep technical tools out of the normal user experience.
-// Admin mode is intentionally opt-in via ?admin=1 on the app URL.
-const isAdminMode = new URLSearchParams(window.location.search).get("admin") === "1";
-if (isAdminMode) {
-  document.body.classList.add("admin-mode");
-  if (testLocalButton) testLocalButton.hidden = false;
-}
+// V1.8 Priority 1 — technical diagnostics remain available from the compact top-right tools.
+// The diagnostics panel stays collapsed until the gear icon is pressed.
 
 if (adminDiagnosticsToggle && adminDiagnostics) {
   adminDiagnosticsToggle.addEventListener("click", () => {
@@ -53,7 +48,22 @@ const REMINDER_TTL_MS = 24 * 60 * 60 * 1000;
 initMyCardsToggle();
 
 function setStatus(text) {
-  pushStatus.textContent = text;
+  if (pushStatus) pushStatus.textContent = text;
+}
+
+function setPushToolState(label, state = "needs-attention") {
+  if (!enablePushButton) return;
+  enablePushButton.classList.remove("needs-attention", "is-enabled", "is-checking");
+  enablePushButton.classList.add(state);
+  enablePushButton.setAttribute("aria-label", label);
+  enablePushButton.setAttribute("title", label);
+  enablePushButton.innerHTML = '🔔<span class="tool-status-dot" aria-hidden="true"></span>';
+}
+
+function setPushToolEnabled(enabled) {
+  if (!enablePushButton) return;
+  enablePushButton.disabled = enabled;
+  setPushToolState(enabled ? "Birthday notifications enabled" : "Enable birthday notifications", enabled ? "is-enabled" : "needs-attention");
 }
 
 function diag(id, value) {
@@ -546,8 +556,7 @@ async function updateDiagnostics() {
 
 function setEnabledState() {
   setStatus("✅ Push Notifications Enabled");
-  enablePushButton.textContent = "✅ Enabled";
-  enablePushButton.disabled = true;
+  setPushToolEnabled(true);
   markPushSetupCompleted();
   if (notificationsPanel) notificationsPanel.classList.add("is-enabled");
 }
@@ -573,6 +582,7 @@ async function updatePushState({ allowWaiting = true } = {}) {
   if (!OneSignal) {
     notificationsPanel?.classList.remove("is-enabled");
     setStatus("⏳ Connecting to push service...");
+    setPushToolState("Connecting to birthday notifications", "is-checking");
     enablePushButton.disabled = true;
     return;
   }
@@ -588,10 +598,11 @@ async function updatePushState({ allowWaiting = true } = {}) {
 
     const permission = "Notification" in window ? Notification.permission : "unsupported";
     notificationsPanel?.classList.remove("is-enabled");
+    setPushToolEnabled(false);
 
     if (hasCompletedPushSetup() && permission === "granted") {
       setStatus("🔄 Restoring notification connection...");
-      enablePushButton.textContent = "🔄 Checking Notifications...";
+      setPushToolState("Checking birthday notifications", "is-checking");
       enablePushButton.disabled = true;
 
       const retry = await waitForExistingSubscription(7000);
@@ -599,16 +610,16 @@ async function updatePushState({ allowWaiting = true } = {}) {
         setEnabledState();
       } else {
         setStatus("⚠️ Could not confirm the existing push subscription.");
-        enablePushButton.textContent = "🔔 Check Push Notifications";
+        setPushToolState("Check birthday notifications", "needs-attention");
         enablePushButton.disabled = false;
       }
     } else if (permission === "denied") {
       setStatus("⚠️ Notifications are blocked in iPad settings.");
-      enablePushButton.textContent = "🔔 Open Notification Settings";
+      setPushToolState("Open notification settings", "needs-attention");
       enablePushButton.disabled = false;
     } else {
       setStatus("🔔 Push Notifications are not enabled yet.");
-      enablePushButton.textContent = "🔔 Enable Push Notifications";
+      setPushToolState("Enable birthday notifications", "needs-attention");
       enablePushButton.disabled = false;
     }
 
@@ -616,7 +627,7 @@ async function updatePushState({ allowWaiting = true } = {}) {
   } catch (error) {
     logDiag("State update error: " + error.message);
     setStatus("⚠️ Unable to read push subscription status.");
-    enablePushButton.textContent = "🔔 Enable Push Notifications";
+    setPushToolState("Enable birthday notifications", "needs-attention");
     enablePushButton.disabled = false;
   }
 }
@@ -656,6 +667,7 @@ enablePushButton.addEventListener("click", async () => {
   }
 
   enablePushButton.disabled = true;
+  setPushToolState("Requesting notification permission", "is-checking");
   setStatus("⏳ Requesting notification permission...");
   logDiag("Enable button pressed.");
 
@@ -682,7 +694,7 @@ enablePushButton.addEventListener("click", async () => {
       setEnabledState();
     } else {
       setStatus("⚠️ Push setup is still completing. Please wait a moment.");
-      enablePushButton.disabled = false;
+      setPushToolEnabled(false);
     }
 
     await updateDiagnostics();
@@ -690,7 +702,7 @@ enablePushButton.addEventListener("click", async () => {
     console.error("Push enable failed:", error);
     logDiag("Push enable error: " + (error?.message || String(error)));
     setStatus("⚠️ Push setup failed. Please try again.");
-    enablePushButton.disabled = false;
+    setPushToolEnabled(false);
     await updateDiagnostics();
   }
 });
