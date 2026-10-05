@@ -1171,3 +1171,145 @@ body {
   .birthday-cards-info { grid-template-columns: auto 1fr; }
   .birthday-cards-info-arrow { display:none; }
 }
+
+/* =========================================================
+   V1.8 Priority 2 Step 1 — first-use Sunday School onboarding
+   ========================================================= */
+.class-onboarding {
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: max(28px, env(safe-area-inset-top)) 18px max(28px, env(safe-area-inset-bottom));
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(99,102,241,.16), transparent 28%),
+    radial-gradient(circle at 92% 8%, rgba(20,184,166,.14), transparent 28%),
+    linear-gradient(145deg, #f5f8fc 0%, #edf3f8 50%, #f8fafc 100%);
+}
+
+.class-onboarding[hidden] { display:none !important; }
+
+.class-onboarding-shell {
+  width:min(100%, 720px);
+  display:grid;
+  gap:18px;
+}
+
+.class-onboarding-brand {
+  text-align:center;
+  color:#fff;
+  padding:30px 22px 26px;
+  border-radius:30px;
+  background:
+    radial-gradient(circle at 82% 18%, rgba(255,255,255,.12), transparent 24%),
+    linear-gradient(135deg, #0b1f33 0%, #123b5a 58%, #1b5877 100%);
+  box-shadow:0 22px 55px rgba(11,31,51,.16);
+  position:relative;
+  overflow:hidden;
+}
+
+.class-onboarding-brand::after {
+  content:"✦  ✧  ✦";
+  position:absolute;
+  right:24px;
+  top:18px;
+  color:rgba(255,255,255,.34);
+  letter-spacing:10px;
+  font-size:14px;
+}
+
+.class-onboarding-cake { font-size:52px; line-height:1; margin-bottom:10px; }
+.class-onboarding-brand-name { font-size:clamp(2rem, 6vw, 3rem); font-weight:900; letter-spacing:-.03em; }
+.class-onboarding-tagline { margin-top:6px; color:rgba(255,255,255,.72); font-size:1rem; }
+
+.class-onboarding-card {
+  padding:clamp(24px, 5vw, 38px);
+  border-radius:30px;
+  background:rgba(255,255,255,.94);
+  border:1px solid rgba(20,35,55,.08);
+  box-shadow:0 24px 65px rgba(15,30,55,.12);
+  text-align:center;
+}
+
+.class-onboarding-icon { font-size:40px; margin-bottom:6px; }
+.class-onboarding-card .section-kicker { color:#64748b; font-weight:800; letter-spacing:.13em; font-size:.72rem; }
+.class-onboarding-card h1 { margin:8px 0 8px; font-size:clamp(1.65rem, 5vw, 2.25rem); color:#0b1f33; }
+.class-onboarding-intro { margin:0 auto; max-width:520px; color:#5d6b78; line-height:1.55; font-size:1rem; }
+
+.class-select-field { margin:28px auto 0; max-width:520px; text-align:left; }
+.class-select-field label { display:block; margin-bottom:9px; font-weight:850; color:#0b1f33; }
+.class-select-field select {
+  width:100%;
+  min-height:56px;
+  border:1px solid rgba(20,35,55,.14);
+  border-radius:16px;
+  padding:0 48px 0 16px;
+  font:inherit;
+  font-weight:700;
+  color:#0b1f33;
+  background:#f8fafc;
+  outline:none;
+  appearance:auto;
+}
+.class-select-field select:focus { border-color:rgba(11,31,51,.42); box-shadow:0 0 0 4px rgba(11,31,51,.08); background:#fff; }
+
+.class-selection-preview {
+  max-width:520px;
+  margin:14px auto 0;
+  padding:13px 15px;
+  display:flex;
+  align-items:center;
+  gap:13px;
+  text-align:left;
+  border-radius:17px;
+  background:linear-gradient(135deg, #f5f8fc, #eef4f8);
+  border:1px solid rgba(20,35,55,.08);
+}
+.class-selection-preview[hidden] { display:none !important; }
+.class-preview-symbol {
+  width:48px;
+  height:48px;
+  flex:0 0 48px;
+  display:grid;
+  place-items:center;
+  border-radius:14px;
+  background:#0b1f33;
+  color:#fff;
+  font-size:24px;
+  box-shadow:0 8px 18px rgba(11,31,51,.14);
+}
+.class-selection-preview strong { display:block; color:#0b1f33; font-size:1rem; }
+.class-selection-preview span { display:block; margin-top:3px; color:#64748b; font-size:.82rem; line-height:1.35; }
+
+.class-onboarding-continue { max-width:520px; margin:20px auto 0; }
+.class-onboarding-continue:disabled { opacity:.42; cursor:not-allowed; }
+.class-onboarding-note { margin:12px 0 0; color:#7a8793; font-size:.78rem; }
+.class-onboarding-footer { text-align:center; color:#94a3b8; font-size:.74rem; }
+
+.selected-class-badge {
+  width:auto;
+  min-width:0;
+  margin:8px auto 0;
+  padding:7px 11px;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  border:1px solid rgba(11,31,51,.10);
+  border-radius:999px;
+  background:rgba(255,255,255,.78);
+  color:#0b1f33;
+  font-size:.78rem;
+  font-weight:800;
+  box-shadow:0 6px 16px rgba(15,30,55,.06);
+}
+.selected-class-badge:hover { background:#fff; transform:translateY(-1px); }
+.selected-class-badge[hidden] { display:none !important; }
+
+#mainApp.onboarding-hidden { display:none !important; }
+
+@media (max-width:600px) {
+  .class-onboarding { padding-left:14px; padding-right:14px; }
+  .class-onboarding-brand { border-radius:24px; padding:24px 18px 22px; }
+  .class-onboarding-card { border-radius:24px; padding:23px 18px 25px; }
+  .class-onboarding-cake { font-size:46px; }
+}

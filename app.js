@@ -27,6 +27,102 @@ const myCardsCard = $("myCardsCard");
 const myCardsToggle = $("myCardsToggle");
 const myCardsContent = $("myCardsContent");
 
+// V1.8 Priority 2 Step 1 — Sunday School onboarding.
+const SUNDAY_SCHOOL_KEY = "birthdayAssistantSundaySchoolV1";
+const SUNDAY_SCHOOL_OPTIONS = {
+  AvaKerolos: { label: "Ava Kerolos", symbol: "✝️" },
+  Malayka: { label: "Malayka", symbol: "👼" },
+  AbounFaltaous: { label: "Abouna Faltaous", symbol: "✝️" }
+};
+
+const classOnboarding = $("classOnboarding");
+const mainApp = $("mainApp");
+const sundaySchoolSelect = $("sundaySchoolSelect");
+const classOnboardingContinue = $("classOnboardingContinue");
+const classSelectionPreview = $("classSelectionPreview");
+const classPreviewSymbol = $("classPreviewSymbol");
+const classPreviewName = $("classPreviewName");
+const classPreviewText = $("classPreviewText");
+const selectedClassBadge = $("selectedClassBadge");
+const selectedClassBadgeText = $("selectedClassBadgeText");
+
+function getSelectedSundaySchool() {
+  try { return localStorage.getItem(SUNDAY_SCHOOL_KEY) || ""; } catch (_) { return ""; }
+}
+
+function setSelectedSundaySchool(value) {
+  try { localStorage.setItem(SUNDAY_SCHOOL_KEY, value); } catch (_) {}
+  window.__selectedSundaySchool = value;
+  window.dispatchEvent(new CustomEvent("birthday-assistant-class-changed", { detail: { classId: value } }));
+}
+
+function updateClassSelectionPreview(value) {
+  const option = SUNDAY_SCHOOL_OPTIONS[value];
+  if (!option) {
+    classSelectionPreview?.setAttribute("hidden", "");
+    if (classOnboardingContinue) classOnboardingContinue.disabled = true;
+    return;
+  }
+  if (classPreviewSymbol) classPreviewSymbol.textContent = option.symbol;
+  if (classPreviewName) classPreviewName.textContent = option.label;
+  if (classPreviewText) classPreviewText.textContent = `Your birthday reminders and cards will be personalized for ${option.label}.`;
+  classSelectionPreview?.removeAttribute("hidden");
+  if (classOnboardingContinue) classOnboardingContinue.disabled = false;
+}
+
+function showClassOnboarding() {
+  const current = getSelectedSundaySchool();
+  if (sundaySchoolSelect) sundaySchoolSelect.value = current || "";
+  updateClassSelectionPreview(current);
+  if (classOnboarding) classOnboarding.hidden = false;
+  mainApp?.classList.add("onboarding-hidden");
+  document.body.classList.add("class-onboarding-active");
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+function finishClassOnboarding() {
+  const value = sundaySchoolSelect?.value || "";
+  if (!SUNDAY_SCHOOL_OPTIONS[value]) return;
+  setSelectedSundaySchool(value);
+  updateSelectedClassBadge();
+  if (classOnboarding) classOnboarding.hidden = true;
+  mainApp?.classList.remove("onboarding-hidden");
+  document.body.classList.remove("class-onboarding-active");
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+function updateSelectedClassBadge() {
+  const value = getSelectedSundaySchool();
+  const option = SUNDAY_SCHOOL_OPTIONS[value];
+  if (!selectedClassBadge || !selectedClassBadgeText) return;
+  if (!option) {
+    selectedClassBadge.hidden = true;
+    return;
+  }
+  selectedClassBadgeText.textContent = option.label;
+  selectedClassBadge.hidden = false;
+  selectedClassBadge.title = `Change Sunday School (currently ${option.label})`;
+}
+
+window.BirthdayAssistantClass = {
+  options: SUNDAY_SCHOOL_OPTIONS,
+  get: getSelectedSundaySchool,
+  set: setSelectedSundaySchool,
+  openSetup: showClassOnboarding
+};
+
+if (sundaySchoolSelect) sundaySchoolSelect.addEventListener("change", event => updateClassSelectionPreview(event.target.value));
+classOnboardingContinue?.addEventListener("click", finishClassOnboarding);
+selectedClassBadge?.addEventListener("click", showClassOnboarding);
+
+(function initSundaySchoolOnboarding() {
+  const current = getSelectedSundaySchool();
+  window.__selectedSundaySchool = current;
+  updateSelectedClassBadge();
+  if (!current) showClassOnboarding();
+})();
+
+
 // V1.8 Priority 1 — technical diagnostics remain available from the compact top-right tools.
 // The diagnostics panel stays collapsed until the gear icon is pressed.
 

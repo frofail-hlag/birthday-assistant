@@ -15,11 +15,52 @@
   <!-- Birthday Assistant V1.8.0 -->
 </head>
 <body>
-  <main class="app">
+  <section class="class-onboarding" id="classOnboarding" aria-labelledby="classOnboardingTitle" hidden>
+    <div class="class-onboarding-shell">
+      <div class="class-onboarding-brand">
+        <div class="class-onboarding-cake" aria-hidden="true">🎂</div>
+        <div class="class-onboarding-brand-name">Birthday Assistant</div>
+        <div class="class-onboarding-tagline">Your Sunday School Birthday Hub</div>
+      </div>
+
+      <div class="class-onboarding-card">
+        <div class="class-onboarding-icon" aria-hidden="true">👋</div>
+        <div class="section-kicker">FIRST-TIME SETUP</div>
+        <h1 id="classOnboardingTitle">Welcome to Birthday Assistant</h1>
+        <p class="class-onboarding-intro">Let’s personalize the app for the Sunday School you serve.</p>
+
+        <div class="class-select-field">
+          <label for="sundaySchoolSelect">🏫 Sunday School</label>
+          <select id="sundaySchoolSelect">
+            <option value="" selected disabled>Select your Sunday School</option>
+            <option value="AvaKerolos">Ava Kerolos</option>
+            <option value="Malayka">Malayka</option>
+            <option value="AbounFaltaous">Abouna Faltaous</option>
+          </select>
+        </div>
+
+        <div class="class-selection-preview" id="classSelectionPreview" hidden aria-live="polite">
+          <div class="class-preview-symbol" id="classPreviewSymbol" aria-hidden="true">🏫</div>
+          <div>
+            <strong id="classPreviewName">Sunday School</strong>
+            <span id="classPreviewText">Your birthday reminders and cards will be personalized for this class.</span>
+          </div>
+        </div>
+
+        <button type="button" id="classOnboardingContinue" class="primary-action class-onboarding-continue" disabled>Continue →</button>
+        <p class="class-onboarding-note">You can change your Sunday School later from the app.</p>
+      </div>
+
+      <div class="class-onboarding-footer">Birthday Assistant · Sunday School Edition</div>
+    </div>
+  </section>
+
+  <main class="app" id="mainApp">
     <header class="hero">
       <div class="cake">🎂</div>
       <h1>Birthday Assistant</h1>
       <p>Never miss an important birthday.</p>
+      <button type="button" id="selectedClassBadge" class="selected-class-badge" hidden aria-label="Change Sunday School">🏫 <span id="selectedClassBadgeText"></span><span aria-hidden="true">⌄</span></button>
       <div class="hero-tools" aria-label="App tools">
         <button type="button" id="enablePush" class="top-tool-button notification-tool needs-attention" aria-label="Enable birthday notifications" title="Birthday notifications">🔔<span class="tool-status-dot" aria-hidden="true"></span></button>
         <button type="button" id="adminDiagnosticsToggle" class="top-tool-button diagnostics-tool" aria-controls="adminDiagnostics" aria-expanded="false" title="Technical diagnostics" aria-label="Technical diagnostics">⚙️</button>
