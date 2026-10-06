@@ -30,10 +30,28 @@ const myCardsContent = $("myCardsContent");
 // V1.8 Priority 2 Step 1 — Sunday School onboarding.
 const SUNDAY_SCHOOL_KEY = "birthdayAssistantSundaySchoolV1";
 const SUNDAY_SCHOOL_OPTIONS = {
-  AvaKerolos: { label: "Ava Kerolos", symbol: "✝️" },
-  Malayka: { label: "Malayka", symbol: "👼" },
-  AbounFaltaous: { label: "Abouna Faltaous", symbol: "✝️" }
+  AvaKerolos: {
+    label: "Ava Kerolos",
+    tab: "AvaKerolos",
+    logo: "logos/avakerolos-sonntagsschule.png",
+    symbol: "✝️"
+  },
+  Malayka: {
+    label: "Malayka",
+    tab: "Malayka",
+    logo: "logos/malayka-sonntagsschule.png",
+    symbol: "👼"
+  },
+  AbounFaltaous: {
+    label: "Abouna Faltaous",
+    tab: "AbounFaltaous",
+    logo: "logos/abounfaltaous-sonntagsschule.png",
+    symbol: "✝️"
+  }
 };
+
+const SELECTED_CLASS_TAG = "selected_class";
+const NOTIFICATION_SCOPE_TAG = "notification_scope";
 
 const classOnboarding = $("classOnboarding");
 const mainApp = $("mainApp");
@@ -41,10 +59,12 @@ const sundaySchoolSelect = $("sundaySchoolSelect");
 const classOnboardingContinue = $("classOnboardingContinue");
 const classSelectionPreview = $("classSelectionPreview");
 const classPreviewSymbol = $("classPreviewSymbol");
+const classPreviewLogo = $("classPreviewLogo");
 const classPreviewName = $("classPreviewName");
 const classPreviewText = $("classPreviewText");
 const selectedClassBadge = $("selectedClassBadge");
 const selectedClassBadgeText = $("selectedClassBadgeText");
+const selectedClassBadgeLogo = $("selectedClassBadgeLogo");
 
 function getSelectedSundaySchool() {
   try { return localStorage.getItem(SUNDAY_SCHOOL_KEY) || ""; } catch (_) { return ""; }
@@ -64,6 +84,10 @@ function updateClassSelectionPreview(value) {
     return;
   }
   if (classPreviewSymbol) classPreviewSymbol.textContent = option.symbol;
+  if (classPreviewLogo) {
+    classPreviewLogo.src = option.logo;
+    classPreviewLogo.alt = `${option.label} logo`;
+  }
   if (classPreviewName) classPreviewName.textContent = option.label;
   if (classPreviewText) classPreviewText.textContent = `Your birthday reminders and cards will be personalized for ${option.label}.`;
   classSelectionPreview?.removeAttribute("hidden");
@@ -100,6 +124,10 @@ function updateSelectedClassBadge() {
     return;
   }
   selectedClassBadgeText.textContent = option.label;
+  if (selectedClassBadgeLogo) {
+    selectedClassBadgeLogo.src = option.logo;
+    selectedClassBadgeLogo.alt = `${option.label} logo`;
+  }
   selectedClassBadge.hidden = false;
   selectedClassBadge.title = `Change Sunday School (currently ${option.label})`;
 }
@@ -114,6 +142,7 @@ window.BirthdayAssistantClass = {
 if (sundaySchoolSelect) sundaySchoolSelect.addEventListener("change", event => updateClassSelectionPreview(event.target.value));
 classOnboardingContinue?.addEventListener("click", finishClassOnboarding);
 selectedClassBadge?.addEventListener("click", showClassOnboarding);
+window.addEventListener("birthday-assistant-class-changed", () => { syncOneSignalClassTags(); });
 
 (function initSundaySchoolOnboarding() {
   const current = getSelectedSundaySchool();
@@ -627,11 +656,14 @@ async function updateDiagnostics() {
   const supported = "Notification" in window && "serviceWorker" in navigator && "PushManager" in window;
   diag("diagSupport", supported ? "Yes" : "No");
   diag("diagPermission", "Notification" in window ? Notification.permission : "Unavailable");
+  diag("diagSelectedClass", SUNDAY_SCHOOL_OPTIONS[getSelectedSundaySchool()]?.label || "Not selected");
+  diag("diagNotificationScope", "Checking...");
 
   if (!OneSignal) {
     diag("diagOptedIn", "Unknown");
     diag("diagSubId", "Unknown");
     diag("diagToken", "Unknown");
+    diag("diagNotificationScope", "OneSignal not initialized");
     await inspectServiceWorkers();
     return;
   }
@@ -641,12 +673,45 @@ async function updateDiagnostics() {
     diag("diagOptedIn", String(sub?.optedIn ?? "undefined"));
     diag("diagSubId", sub?.id || "None");
     diag("diagToken", sub?.token ? "Present" : "None");
+    const tags = typeof OneSignal.User?.getTags === "function" ? OneSignal.User.getTags() : {};
+    diag("diagNotificationScope", tags?.[NOTIFICATION_SCOPE_TAG] || "Not set");
     await inspectServiceWorkers();
   } catch (error) {
     diag("diagOptedIn", "Error");
     diag("diagSubId", "Error");
     diag("diagToken", "Error");
     logDiag("Subscription inspection error: " + error.message);
+  }
+}
+
+async function syncOneSignalClassTags() {
+  const OneSignal = window.__oneSignal;
+  const selectedClass = getSelectedSundaySchool();
+  if (!OneSignal || !selectedClass || !SUNDAY_SCHOOL_OPTIONS[selectedClass]) return;
+
+  try {
+    const tags = typeof OneSignal.User?.getTags === "function" ? OneSignal.User.getTags() : {};
+    const updates = {};
+
+    if (tags?.[SELECTED_CLASS_TAG] !== selectedClass) {
+      updates[SELECTED_CLASS_TAG] = selectedClass;
+    }
+
+    // Preserve the special ALL scope used by the owner's monitoring devices.
+    // For normal users, their notification scope follows their selected class.
+    if (tags?.[NOTIFICATION_SCOPE_TAG] !== "ALL") {
+      updates[NOTIFICATION_SCOPE_TAG] = selectedClass;
+    }
+
+    if (Object.keys(updates).length && typeof OneSignal.User?.addTags === "function") {
+      OneSignal.User.addTags(updates);
+      logDiag(`OneSignal class tags updated: ${JSON.stringify(updates)}`);
+    }
+
+    const finalTags = typeof OneSignal.User?.getTags === "function" ? OneSignal.User.getTags() : {};
+    diag("diagNotificationScope", finalTags?.[NOTIFICATION_SCOPE_TAG] || updates[NOTIFICATION_SCOPE_TAG] || "Not set");
+  } catch (error) {
+    logDiag("OneSignal class tag sync failed: " + (error?.message || String(error)));
   }
 }
 
@@ -735,6 +800,7 @@ window.addEventListener("onesignal-worker-registered", async () => {
 
 window.addEventListener("onesignal-ready", async () => {
   logDiag("OneSignal initialization completed.");
+  await syncOneSignalClassTags();
   await updatePushState();
 
   try {
@@ -793,6 +859,7 @@ enablePushButton.addEventListener("click", async () => {
       setPushToolEnabled(false);
     }
 
+    await syncOneSignalClassTags();
     await updateDiagnostics();
   } catch (error) {
     console.error("Push enable failed:", error);
@@ -1260,8 +1327,10 @@ setTimeout(() => {
     customizeSelected.disabled = true;
   }
 
-  async function applyAvaKerolosLogo(dataUrl) {
-    const LOGO_URL = "logos/avakerolos-sonntagsschule.png";
+  async function applyClassLogo(dataUrl) {
+    const selectedClass = getSelectedSundaySchool() || "AvaKerolos";
+    const classOption = SUNDAY_SCHOOL_OPTIONS[selectedClass] || SUNDAY_SCHOOL_OPTIONS.AvaKerolos;
+    const LOGO_URL = classOption.logo;
     const image = new Image();
     const logo = new Image();
     image.src = dataUrl;
@@ -1269,7 +1338,7 @@ setTimeout(() => {
 
     await Promise.all([
       new Promise((resolve, reject) => { image.onload = resolve; image.onerror = () => reject(new Error("Could not load the generated birthday artwork.")); }),
-      new Promise((resolve, reject) => { logo.onload = resolve; logo.onerror = () => reject(new Error("Could not load the AvaKerolos logo.")); })
+      new Promise((resolve, reject) => { logo.onload = resolve; logo.onerror = () => reject(new Error(`Could not load the ${classOption.label} logo.`)); })
     ]);
 
     const canvas = document.createElement("canvas");
@@ -1418,7 +1487,7 @@ setTimeout(() => {
       }
 
       const rawDataUrl = await blobToDataUrl(blob);
-      const dataUrl = await applyAvaKerolosLogo(rawDataUrl);
+      const dataUrl = await applyClassLogo(rawDataUrl);
       renderGeneratedImage(dataUrl, payload);
       if (demoNote) demoNote.textContent = "Real AI generation is connected. Each generation uses OpenAI API credit.";
       console.log("[Birthday Assistant] AI image received", { type: blob.type, size: blob.size });

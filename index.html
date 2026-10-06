@@ -9,10 +9,10 @@
   <meta name="apple-mobile-web-app-title" content="Birthday Assistant">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="style.css?v=1.8.0">
+  <link rel="stylesheet" href="style.css?v=1.8.2">
   <title>Birthday Assistant</title>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <!-- Birthday Assistant V1.8.0 -->
+  <!-- Birthday Assistant V1.8.2 — Priority 2 Step 2A -->
 </head>
 <body>
   <section class="class-onboarding" id="classOnboarding" aria-labelledby="classOnboardingTitle" hidden>
@@ -40,7 +40,7 @@
         </div>
 
         <div class="class-selection-preview" id="classSelectionPreview" hidden aria-live="polite">
-          <div class="class-preview-symbol" id="classPreviewSymbol" aria-hidden="true">🏫</div>
+          <div class="class-preview-logo-wrap"><img id="classPreviewLogo" class="class-preview-logo" src="logos/avakerolos-sonntagsschule.png" alt="" aria-hidden="true"></div>
           <div>
             <strong id="classPreviewName">Sunday School</strong>
             <span id="classPreviewText">Your birthday reminders and cards will be personalized for this class.</span>
@@ -60,7 +60,7 @@
       <div class="cake">🎂</div>
       <h1>Birthday Assistant</h1>
       <p>Never miss an important birthday.</p>
-      <button type="button" id="selectedClassBadge" class="selected-class-badge" hidden aria-label="Change Sunday School">🏫 <span id="selectedClassBadgeText"></span><span aria-hidden="true">⌄</span></button>
+      <button type="button" id="selectedClassBadge" class="selected-class-badge" hidden aria-label="Change Sunday School"><img id="selectedClassBadgeLogo" class="selected-class-badge-logo" src="logos/avakerolos-sonntagsschule.png" alt="" aria-hidden="true"><span id="selectedClassBadgeText"></span><span aria-hidden="true">⌄</span></button>
       <div class="hero-tools" aria-label="App tools">
         <button type="button" id="enablePush" class="top-tool-button notification-tool needs-attention" aria-label="Enable birthday notifications" title="Birthday notifications">🔔<span class="tool-status-dot" aria-hidden="true"></span></button>
         <button type="button" id="adminDiagnosticsToggle" class="top-tool-button diagnostics-tool" aria-controls="adminDiagnostics" aria-expanded="false" title="Technical diagnostics" aria-label="Technical diagnostics">⚙️</button>
@@ -129,6 +129,8 @@
         <div class="diag-row"><span>OneSignal worker</span><strong id="diagOsSw">Checking...</strong></div>
         <div class="diag-row"><span>OneSignal worker state</span><strong id="diagOsState">Checking...</strong></div>
         <div class="diag-row"><span>OneSignal worker scope</span><strong id="diagOsScope">Checking...</strong></div>
+        <div class="diag-row"><span>Selected Sunday School</span><strong id="diagSelectedClass">Checking...</strong></div>
+        <div class="diag-row"><span>Notification scope</span><strong id="diagNotificationScope">Checking...</strong></div>
         <pre id="diagLog">Starting diagnostics...</pre>
       </div>
     </details>
@@ -368,6 +370,6 @@
   };
 </script>
 
-  <script src="app.js?v=1.8.0"></script>
+  <script src="app.js?v=1.8.2"></script>
 </body>
 </html>
