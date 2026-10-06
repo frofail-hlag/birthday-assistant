@@ -52,6 +52,7 @@ const SUNDAY_SCHOOL_OPTIONS = {
 
 const SELECTED_CLASS_TAG = "selected_class";
 const NOTIFICATION_SCOPE_TAG = "notification_scope";
+const NOTIFICATION_SCOPE_LOCK_TAG = "notification_scope_locked";
 
 const classOnboarding = $("classOnboarding");
 const mainApp = $("mainApp");
@@ -658,12 +659,14 @@ async function updateDiagnostics() {
   diag("diagPermission", "Notification" in window ? Notification.permission : "Unavailable");
   diag("diagSelectedClass", SUNDAY_SCHOOL_OPTIONS[getSelectedSundaySchool()]?.label || "Not selected");
   diag("diagNotificationScope", "Checking...");
+  diag("diagNotificationScopeLocked", "Checking...");
 
   if (!OneSignal) {
     diag("diagOptedIn", "Unknown");
     diag("diagSubId", "Unknown");
     diag("diagToken", "Unknown");
     diag("diagNotificationScope", "OneSignal not initialized");
+    diag("diagNotificationScopeLocked", "Unknown");
     await inspectServiceWorkers();
     return;
   }
@@ -675,6 +678,7 @@ async function updateDiagnostics() {
     diag("diagToken", sub?.token ? "Present" : "None");
     const tags = typeof OneSignal.User?.getTags === "function" ? OneSignal.User.getTags() : {};
     diag("diagNotificationScope", tags?.[NOTIFICATION_SCOPE_TAG] || "Not set");
+    diag("diagNotificationScopeLocked", String(tags?.[NOTIFICATION_SCOPE_LOCK_TAG] || "Not set"));
     await inspectServiceWorkers();
   } catch (error) {
     diag("diagOptedIn", "Error");
@@ -712,6 +716,7 @@ async function syncOneSignalClassTags() {
 
     const finalTags = typeof OneSignal.User?.getTags === "function" ? OneSignal.User.getTags() : {};
     diag("diagNotificationScope", finalTags?.[NOTIFICATION_SCOPE_TAG] || updates[NOTIFICATION_SCOPE_TAG] || "Not set");
+    diag("diagNotificationScopeLocked", String(finalTags?.[NOTIFICATION_SCOPE_LOCK_TAG] || "Not set"));
   } catch (error) {
     logDiag("OneSignal class tag sync failed: " + (error?.message || String(error)));
   }
