@@ -697,11 +697,9 @@ async function syncOneSignalClassTags() {
       updates[SELECTED_CLASS_TAG] = selectedClass;
     }
 
-    // Owner/monitoring devices can be locked to ALL with a OneSignal tag.
-    // Normal users keep notification_scope aligned with their selected class.
-    // This avoids a stale local OneSignal cache overwriting an owner's manually assigned ALL scope after the app starts.
-    const notificationScopeLocked = String(tags?.notification_scope_locked || "").toLowerCase() === "true";
-    if (!notificationScopeLocked && tags?.[NOTIFICATION_SCOPE_TAG] !== "ALL") {
+    // Preserve the special ALL scope used by the owner's monitoring devices.
+    // For normal users, their notification scope follows their selected class.
+    if (tags?.[NOTIFICATION_SCOPE_TAG] !== "ALL") {
       updates[NOTIFICATION_SCOPE_TAG] = selectedClass;
     }
 
