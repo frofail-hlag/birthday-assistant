@@ -816,7 +816,8 @@ window.addEventListener("onesignal-worker-registered", async () => {
 
 window.addEventListener("onesignal-ready", async () => {
   logDiag("OneSignal initialization completed.");
-  await syncOneSignalClassTags();
+  // IMPORTANT: do not write notification_scope during normal startup.
+  // An existing value (including ALL for owner/monitoring devices) must be preserved.
   await updatePushState();
 
   try {
