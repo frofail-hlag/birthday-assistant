@@ -51,8 +51,15 @@ const SUNDAY_SCHOOL_OPTIONS = {
 };
 
 const NOTIFICATION_SCOPE_TAG = "notification_scope";
-// Notification routing is intentionally kept to ONE OneSignal Data Tag.
+// Notification routing uses ONE OneSignal Data Tag.
 // The selected Sunday School itself is stored locally in the PWA.
+// These are the two owner/monitoring OneSignal user IDs. They always receive ALL classes.
+// They are identifiers, not credentials. If either device ever receives a new OneSignal ID
+// after a full push reset, this list must be updated.
+const MONITORING_ONESIGNAL_IDS = new Set([
+  "4b863e8f-b205-4091-a010-d4dabd2adbc3", // Fady iPhone
+  "c1d87eae-68ca-41bc-aa7e-337721e939a9"  // Fady iPad
+]);
 const LEGACY_SELECTED_CLASS_TAG = "selected_class";
 const LEGACY_NOTIFICATION_SCOPE_LOCK_TAG = "notification_scope_locked";
 
@@ -696,17 +703,17 @@ async function syncOneSignalClassTags({ forceScope = false } = {}) {
     const getTags = typeof OneSignal.User?.getTags === "function"
       ? () => OneSignal.User.getTags()
       : () => ({});
-    const tags = getTags();
+    const tags = getTags() || {};
+    const oneSignalId = OneSignal.User?.onesignalId || "";
+    const isMonitoringDevice = MONITORING_ONESIGNAL_IDS.has(oneSignalId);
 
-    // Keep notification routing to a single OneSignal tag.
-    // selected_class is local-only and is no longer stored in OneSignal.
-    // Clean up legacy tags from earlier Step 2A/2B builds.
+    // Keep only the single routing tag. Clean up legacy tags from earlier builds.
     if (typeof OneSignal.User?.removeTags === "function") {
       const legacyTags = [];
-      if (Object.prototype.hasOwnProperty.call(tags || {}, LEGACY_SELECTED_CLASS_TAG)) {
+      if (Object.prototype.hasOwnProperty.call(tags, LEGACY_SELECTED_CLASS_TAG)) {
         legacyTags.push(LEGACY_SELECTED_CLASS_TAG);
       }
-      if (Object.prototype.hasOwnProperty.call(tags || {}, LEGACY_NOTIFICATION_SCOPE_LOCK_TAG)) {
+      if (Object.prototype.hasOwnProperty.call(tags, LEGACY_NOTIFICATION_SCOPE_LOCK_TAG)) {
         legacyTags.push(LEGACY_NOTIFICATION_SCOPE_LOCK_TAG);
       }
       if (legacyTags.length) {
@@ -715,17 +722,29 @@ async function syncOneSignalClassTags({ forceScope = false } = {}) {
       }
     }
 
-    // On normal app startup, preserve an existing notification scope.
-    // This is what allows the owner's manually assigned ALL scope to persist.
+    const currentScope = tags[NOTIFICATION_SCOPE_TAG];
+
+    // OWNER DEVICES: always ALL, regardless of selected class.
+    // This is the only exception to normal class-based routing.
+    if (isMonitoringDevice) {
+      if (typeof OneSignal.User?.addTags === "function" && currentScope !== "ALL") {
+        await OneSignal.User.addTags({ [NOTIFICATION_SCOPE_TAG]: "ALL" });
+        logDiag("Monitoring device detected: notification scope forced to ALL.");
+      }
+      const finalTags = getTags() || {};
+      diag("diagNotificationScope", finalTags[NOTIFICATION_SCOPE_TAG] || "ALL");
+      return;
+    }
+
+    // NORMAL DEVICES: preserve an existing scope during startup.
     // When the user explicitly changes class, force the routing scope to follow it.
-    const currentScope = tags?.[NOTIFICATION_SCOPE_TAG];
     if (typeof OneSignal.User?.addTags === "function" && (forceScope || !currentScope)) {
       await OneSignal.User.addTags({ [NOTIFICATION_SCOPE_TAG]: selectedClass });
       logDiag(`OneSignal notification scope ${forceScope ? "updated after class change" : "initialized"}: ${selectedClass}`);
     }
 
-    const finalTags = getTags();
-    diag("diagNotificationScope", finalTags?.[NOTIFICATION_SCOPE_TAG] || (forceScope || !currentScope ? selectedClass : "Not set"));
+    const finalTags = getTags() || {};
+    diag("diagNotificationScope", finalTags[NOTIFICATION_SCOPE_TAG] || (forceScope || !currentScope ? selectedClass : "Not set"));
   } catch (error) {
     logDiag("OneSignal notification scope sync failed: " + (error?.message || String(error)));
   }
@@ -816,8 +835,9 @@ window.addEventListener("onesignal-worker-registered", async () => {
 
 window.addEventListener("onesignal-ready", async () => {
   logDiag("OneSignal initialization completed.");
-  // IMPORTANT: do not write notification_scope during normal startup.
-  // An existing value (including ALL for owner/monitoring devices) must be preserved.
+  // Apply routing policy after OneSignal is ready. Monitoring devices are forced to ALL;
+  // normal devices preserve an existing scope unless the class was explicitly changed.
+  await syncOneSignalClassTags();
   await updatePushState();
 
   try {
