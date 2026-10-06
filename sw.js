@@ -1,4 +1,4 @@
-const CACHE_NAME = "birthday-assistant-v1-8-2b";
+const CACHE_NAME = "birthday-assistant-v1-8-2b-corrected";
 const APP_SHELL = [
   "/birthday-assistant/",
   "/birthday-assistant/index.html",
@@ -7,7 +7,9 @@ const APP_SHELL = [
   "/birthday-assistant/manifest.json",
   "/birthday-assistant/icons/icon-192.png",
   "/birthday-assistant/icons/icon-512.png",
-  "/birthday-assistant/logos/avakerolos-sonntagsschule.png"
+  "/birthday-assistant/logos/avakerolos-sonntagsschule.png",
+  "/birthday-assistant/logos/malayka-sonntagsschule.png",
+  "/birthday-assistant/logos/abounfaltaous-sonntagsschule.png"
 ];
 
 self.addEventListener("install", event => {

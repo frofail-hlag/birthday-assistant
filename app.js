@@ -50,9 +50,11 @@ const SUNDAY_SCHOOL_OPTIONS = {
   }
 };
 
-const SELECTED_CLASS_TAG = "selected_class";
 const NOTIFICATION_SCOPE_TAG = "notification_scope";
-const NOTIFICATION_SCOPE_LOCK_TAG = "notification_scope_locked";
+// Notification routing is intentionally kept to ONE OneSignal Data Tag.
+// The selected Sunday School itself is stored locally in the PWA.
+const LEGACY_SELECTED_CLASS_TAG = "selected_class";
+const LEGACY_NOTIFICATION_SCOPE_LOCK_TAG = "notification_scope_locked";
 
 const classOnboarding = $("classOnboarding");
 const mainApp = $("mainApp");
@@ -143,7 +145,7 @@ window.BirthdayAssistantClass = {
 if (sundaySchoolSelect) sundaySchoolSelect.addEventListener("change", event => updateClassSelectionPreview(event.target.value));
 classOnboardingContinue?.addEventListener("click", finishClassOnboarding);
 selectedClassBadge?.addEventListener("click", showClassOnboarding);
-window.addEventListener("birthday-assistant-class-changed", () => { syncOneSignalClassTags(); });
+window.addEventListener("birthday-assistant-class-changed", () => { syncOneSignalClassTags({ forceScope: true }); });
 
 (function initSundaySchoolOnboarding() {
   const current = getSelectedSundaySchool();
@@ -659,14 +661,12 @@ async function updateDiagnostics() {
   diag("diagPermission", "Notification" in window ? Notification.permission : "Unavailable");
   diag("diagSelectedClass", SUNDAY_SCHOOL_OPTIONS[getSelectedSundaySchool()]?.label || "Not selected");
   diag("diagNotificationScope", "Checking...");
-  diag("diagNotificationScopeLocked", "Checking...");
 
   if (!OneSignal) {
     diag("diagOptedIn", "Unknown");
     diag("diagSubId", "Unknown");
     diag("diagToken", "Unknown");
     diag("diagNotificationScope", "OneSignal not initialized");
-    diag("diagNotificationScopeLocked", "Unknown");
     await inspectServiceWorkers();
     return;
   }
@@ -678,7 +678,6 @@ async function updateDiagnostics() {
     diag("diagToken", sub?.token ? "Present" : "None");
     const tags = typeof OneSignal.User?.getTags === "function" ? OneSignal.User.getTags() : {};
     diag("diagNotificationScope", tags?.[NOTIFICATION_SCOPE_TAG] || "Not set");
-    diag("diagNotificationScopeLocked", String(tags?.[NOTIFICATION_SCOPE_LOCK_TAG] || "Not set"));
     await inspectServiceWorkers();
   } catch (error) {
     diag("diagOptedIn", "Error");
@@ -688,37 +687,47 @@ async function updateDiagnostics() {
   }
 }
 
-async function syncOneSignalClassTags() {
+async function syncOneSignalClassTags({ forceScope = false } = {}) {
   const OneSignal = window.__oneSignal;
   const selectedClass = getSelectedSundaySchool();
   if (!OneSignal || !selectedClass || !SUNDAY_SCHOOL_OPTIONS[selectedClass]) return;
 
   try {
-    const tags = typeof OneSignal.User?.getTags === "function" ? OneSignal.User.getTags() : {};
-    const updates = {};
+    const getTags = typeof OneSignal.User?.getTags === "function"
+      ? () => OneSignal.User.getTags()
+      : () => ({});
+    const tags = getTags();
 
-    if (tags?.[SELECTED_CLASS_TAG] !== selectedClass) {
-      updates[SELECTED_CLASS_TAG] = selectedClass;
+    // Keep notification routing to a single OneSignal tag.
+    // selected_class is local-only and is no longer stored in OneSignal.
+    // Clean up legacy tags from earlier Step 2A/2B builds.
+    if (typeof OneSignal.User?.removeTags === "function") {
+      const legacyTags = [];
+      if (Object.prototype.hasOwnProperty.call(tags || {}, LEGACY_SELECTED_CLASS_TAG)) {
+        legacyTags.push(LEGACY_SELECTED_CLASS_TAG);
+      }
+      if (Object.prototype.hasOwnProperty.call(tags || {}, LEGACY_NOTIFICATION_SCOPE_LOCK_TAG)) {
+        legacyTags.push(LEGACY_NOTIFICATION_SCOPE_LOCK_TAG);
+      }
+      if (legacyTags.length) {
+        await OneSignal.User.removeTags(legacyTags);
+        logDiag(`OneSignal legacy tags removed: ${legacyTags.join(", ")}`);
+      }
     }
 
-    // Owner/monitoring devices can be locked to ALL with a OneSignal tag.
-    // Normal users keep notification_scope aligned with their selected class.
-    // This avoids a stale local OneSignal cache overwriting an owner's manually assigned ALL scope after the app starts.
-    const notificationScopeLocked = String(tags?.notification_scope_locked || "").toLowerCase() === "true";
-    if (!notificationScopeLocked && tags?.[NOTIFICATION_SCOPE_TAG] !== "ALL") {
-      updates[NOTIFICATION_SCOPE_TAG] = selectedClass;
+    // On normal app startup, preserve an existing notification scope.
+    // This is what allows the owner's manually assigned ALL scope to persist.
+    // When the user explicitly changes class, force the routing scope to follow it.
+    const currentScope = tags?.[NOTIFICATION_SCOPE_TAG];
+    if (typeof OneSignal.User?.addTags === "function" && (forceScope || !currentScope)) {
+      await OneSignal.User.addTags({ [NOTIFICATION_SCOPE_TAG]: selectedClass });
+      logDiag(`OneSignal notification scope ${forceScope ? "updated after class change" : "initialized"}: ${selectedClass}`);
     }
 
-    if (Object.keys(updates).length && typeof OneSignal.User?.addTags === "function") {
-      OneSignal.User.addTags(updates);
-      logDiag(`OneSignal class tags updated: ${JSON.stringify(updates)}`);
-    }
-
-    const finalTags = typeof OneSignal.User?.getTags === "function" ? OneSignal.User.getTags() : {};
-    diag("diagNotificationScope", finalTags?.[NOTIFICATION_SCOPE_TAG] || updates[NOTIFICATION_SCOPE_TAG] || "Not set");
-    diag("diagNotificationScopeLocked", String(finalTags?.[NOTIFICATION_SCOPE_LOCK_TAG] || "Not set"));
+    const finalTags = getTags();
+    diag("diagNotificationScope", finalTags?.[NOTIFICATION_SCOPE_TAG] || (forceScope || !currentScope ? selectedClass : "Not set"));
   } catch (error) {
-    logDiag("OneSignal class tag sync failed: " + (error?.message || String(error)));
+    logDiag("OneSignal notification scope sync failed: " + (error?.message || String(error)));
   }
 }
 
