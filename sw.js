@@ -1,4 +1,4 @@
-const CACHE_NAME = "birthday-assistant-v1-8-3-final";
+const CACHE_NAME = "birthday-assistant-v1-0-production";
 const APP_SHELL = [
   "/birthday-assistant/",
   "/birthday-assistant/index.html",

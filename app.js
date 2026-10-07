@@ -28,7 +28,7 @@ const myCardsToggle = $("myCardsToggle");
 const myCardsContent = $("myCardsContent");
 
 // V1.8 Priority 2 Step 1 — Sunday School onboarding.
-const APP_VERSION = "1.8.3";
+const APP_VERSION = "1.0";
 
 const SUNDAY_SCHOOL_KEY = "birthdayAssistantSundaySchoolV1";
 const SUNDAY_SCHOOL_OPTIONS = {
