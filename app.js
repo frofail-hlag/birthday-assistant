@@ -42,9 +42,9 @@ const SUNDAY_SCHOOL_OPTIONS = {
     logo: "logos/malayka-sonntagsschule.png",
     symbol: "👼"
   },
-  AbounFaltaous: {
+  AbounaFaltaous: {
     label: "Abouna Faltaous",
-    tab: "AbounFaltaous",
+    tab: "AbounaFaltaous",
     logo: "logos/abounfaltaous-sonntagsschule.png",
     symbol: "✝️"
   }
