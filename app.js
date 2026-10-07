@@ -28,6 +28,8 @@ const myCardsToggle = $("myCardsToggle");
 const myCardsContent = $("myCardsContent");
 
 // V1.8 Priority 2 Step 1 — Sunday School onboarding.
+const APP_VERSION = "1.8.3";
+
 const SUNDAY_SCHOOL_KEY = "birthdayAssistantSundaySchoolV1";
 const SUNDAY_SCHOOL_OPTIONS = {
   AvaKerolos: {
@@ -1646,3 +1648,10 @@ setTimeout(() => {
   window.BirthdayAIStudio = { open: openStudio, generate };
 })();
 
+
+
+// Keep the visible release indicator synchronized with APP_VERSION.
+document.addEventListener("DOMContentLoaded", () => {
+  const versionEl = document.getElementById("appVersion");
+  if (versionEl) versionEl.textContent = `Version ${APP_VERSION}`;
+});
