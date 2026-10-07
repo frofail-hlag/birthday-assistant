@@ -1650,8 +1650,3 @@ setTimeout(() => {
 
 
 
-// Keep the visible release indicator synchronized with APP_VERSION.
-document.addEventListener("DOMContentLoaded", () => {
-  const versionEl = document.getElementById("appVersion");
-  if (versionEl) versionEl.textContent = `Version ${APP_VERSION}`;
-});
