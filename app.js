@@ -610,7 +610,11 @@ function importReminderFromLaunchUrl() {
     const cleanName = birthday.trim();
     if (!cleanName) return;
 
-    const message = `🎉 Don't forget! Tomorrow is ${cleanName}'s birthday! 🎂`;
+    const age = params.get("age");
+    const cleanAge = age && /^\d+$/.test(age.trim()) ? age.trim() : "";
+    const message = cleanAge
+      ? `🎉 Don't forget! Tomorrow is ${cleanName}'s birthday! They will turn ${cleanAge}! 🎂`
+      : `🎉 Don't forget! Tomorrow is ${cleanName}'s birthday! 🎂`;
     addBirthdayReminder({ name: cleanName, message });
 
     // Remove the notification parameters after consuming them so a refresh
