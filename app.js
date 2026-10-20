@@ -613,7 +613,7 @@ function importReminderFromLaunchUrl() {
     const age = params.get("age");
     const cleanAge = age && /^\d+$/.test(age.trim()) ? age.trim() : "";
     const message = cleanAge
-      ? `🎉 Don't forget! Tomorrow is ${cleanName}'s birthday! They will turn ${cleanAge}! 🎂`
+      ? `🎉 Don't forget! Tomorrow is ${cleanName}'s birthday! Turning ${cleanAge}! 🎂`
       : `🎉 Don't forget! Tomorrow is ${cleanName}'s birthday! 🎂`;
     addBirthdayReminder({ name: cleanName, message });
 
