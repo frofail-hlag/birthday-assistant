@@ -27,6 +27,27 @@ h1 { margin:8px 0; font-size:30px; }
 button { width:100%; border:0; border-radius:12px; padding:14px 16px; margin-top:10px; font-size:16px; font-weight:600; cursor:pointer; background:#0b1f33; color:white; }
 button.secondary { background:#e9eef3; color:#0b1f33; }
 button:disabled { opacity:.55; cursor:default; }
+.attendance-entry { margin:14px 0; text-align:center; }
+.attendance-entry-button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:auto;
+  min-width:190px;
+  margin:0;
+  padding:14px 20px;
+  border:0;
+  border-radius:12px;
+  background:#0b1f33;
+  color:#fff;
+  font-size:16px;
+  font-weight:600;
+  line-height:1.25;
+  text-decoration:none;
+  cursor:pointer;
+}
+.attendance-entry-button:hover { background:#163653; }
+.attendance-entry-button:focus-visible { outline:3px solid rgba(45,80,130,.35); outline-offset:3px; }
 .diagnostics { font-size:14px; }
 .diag-row { display:flex; justify-content:space-between; gap:16px; padding:9px 0; border-bottom:1px solid #edf1f4; }
 .diag-row span { color:#5d6b78; }
