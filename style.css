@@ -27,7 +27,7 @@ h1 { margin:8px 0; font-size:30px; }
 button { width:100%; border:0; border-radius:12px; padding:14px 16px; margin-top:10px; font-size:16px; font-weight:600; cursor:pointer; background:#0b1f33; color:white; }
 button.secondary { background:#e9eef3; color:#0b1f33; }
 button:disabled { opacity:.55; cursor:default; }
-.attendance-entry { min-height:150px; margin:14px 0; display:grid; place-items:center; text-align:center; }
+.attendance-entry { grid-column:1 / -1; width:100%; min-height:150px; margin:14px 0; display:grid; place-items:center; text-align:center; }
 .attendance-entry-button {
   display:inline-flex;
   align-items:center;
