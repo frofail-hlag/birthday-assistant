@@ -1,7 +1,8 @@
-const CACHE_NAME = "birthday-assistant-attendance-dev1";
+const CACHE_NAME = "birthday-assistant-attendance-dev2";
 const APP_SHELL = [
   "/birthday-assistant/",
   "/birthday-assistant/index.html",
+  "/birthday-assistant/attendance/index.html",
   "/birthday-assistant/style.css",
   "/birthday-assistant/app.js",
   "/birthday-assistant/manifest.json",
@@ -37,6 +38,7 @@ self.addEventListener("fetch", event => {
   const isAppShell =
     url.pathname === "/birthday-assistant/" ||
     url.pathname === "/birthday-assistant/index.html" ||
+    url.pathname === "/birthday-assistant/attendance/index.html" ||
     url.pathname === "/birthday-assistant/app.js" ||
     url.pathname === "/birthday-assistant/style.css" ||
     url.pathname === "/birthday-assistant/manifest.json";
