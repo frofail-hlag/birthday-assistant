@@ -85,12 +85,63 @@ body{background:radial-gradient(circle at 8% 0%,rgba(104,81,237,.10),transparent
 .roster-actions .statistics-action{background:#efefff;color:#4940b6}
 #studentStatistics .dashboard-content .student{padding:14px 16px}
 @media(max-width:700px){.page-heading{align-items:flex-start;flex-direction:column}.page-heading #refresh,.page-heading #backToRoster{width:100%;margin:0}.dashboard-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dashboard-stats .stat{min-height:94px;padding:13px}.dashboard-stats .stat strong{font-size:25px}.roster-list{grid-template-columns:1fr}.add-student{grid-template-columns:1fr;padding:12px}.add-student button{width:100%}.roster-card{padding:12px}.roster-actions button{padding:8px 9px;font-size:11px}.dashboard-content .student{padding:13px;gap:10px}.dashboard-content .student span{font-size:12px}}
+
+/* Class statistics dashboard */
+.dashboard-insights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:-6px 0 18px}
+.insight-tile{padding:15px 17px;border:1px solid #e8eaf5;border-radius:15px;background:linear-gradient(120deg,#fff,#f8f9ff)}
+.insight-tile span{display:block;color:#6d7b8e;font-size:12px;font-weight:750;text-transform:uppercase;letter-spacing:.06em}
+.insight-tile strong{display:block;color:#1b3150;font-size:20px;margin-top:5px}
+.dashboard-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:14px;margin:0 0 14px}
+.dashboard-card{min-width:0;padding:19px;border:1px solid #e7eaf2;border-radius:18px;background:#fff;box-shadow:0 5px 18px rgba(20,40,70,.035);margin:0 0 14px}
+.dashboard-card h3{font-size:17px;letter-spacing:-.025em;margin:5px 0 3px}
+.dashboard-card-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.dashboard-card-heading p{margin:0}
+.chart-key{display:flex;align-items:center;gap:7px;color:#718096;font-size:12px;font-weight:650;white-space:nowrap}
+.chart-key i{display:inline-block;width:9px;height:9px;border-radius:50%;background:#6255df}
+.chart-area{min-height:210px;display:flex;align-items:center}
+.chart-area svg{width:100%;height:auto;overflow:visible}
+.chart-gridline{stroke:#e9edf5;stroke-width:1}
+.chart-axis-label{fill:#8290a2;font-size:11px}
+.chart-line{fill:none;stroke:#6255df;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.chart-area-fill{fill:url(#trendFill);opacity:.8}
+.chart-point{fill:#fff;stroke:#6255df;stroke-width:2.5}
+.chart-empty{width:100%;padding:38px 12px;text-align:center;color:#7a8798;background:#f8f9fc;border-radius:12px}
+.breakdown-list{display:grid;gap:14px}
+.breakdown-item{display:grid;gap:7px}
+.breakdown-meta{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:700;color:#34465d}
+.breakdown-meta span:last-child{color:#6d7b8e;font-weight:600}
+.stacked-bar{display:flex;height:12px;overflow:hidden;border-radius:20px;background:#f1f3f7}
+.stacked-present{background:#20ad80}.stacked-absent{background:#f18b83}
+.breakdown-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:15px;color:#78869a;font-size:11px;font-weight:650}
+.breakdown-legend i{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:5px}
+.followup-card{border-color:#f2dfaa;background:linear-gradient(130deg,#fffdf6,#fff)}
+.followup-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.followup-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 13px;border:1px solid #f1e2b9;border-radius:13px;background:#fff}
+.followup-item strong{display:block;font-size:14px;color:#4c3c19}
+.followup-item small{display:block;color:#8b713d;margin-top:3px}
+.followup-item button{margin:0;padding:7px 10px;white-space:nowrap;font-size:12px}
+.followup-empty{padding:17px;border-radius:12px;background:#f1faf5;color:#28734e;font-weight:650}
+.session-list{display:grid;gap:7px}
+.session-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border:1px solid #edf0f5;border-radius:12px}
+.session-row strong{font-size:14px}.session-row span{font-size:13px;color:#68798d;font-weight:650;text-align:right}
+@media(max-width:760px){.dashboard-grid{grid-template-columns:1fr}.dashboard-insights{grid-template-columns:1fr 1fr}.dashboard-card{padding:15px}.followup-list{grid-template-columns:1fr}.dashboard-card-heading{flex-wrap:wrap}.chart-area{min-height:175px}}
+@media(max-width:420px){.dashboard-insights{grid-template-columns:1fr}.session-row{align-items:flex-start;flex-direction:column}.session-row span{text-align:left}}
 </style></head><body><div class="wrap"><header class="attendance-header"><div><b>📋 Sunday School Attendance</b> <span id="classCaption" class="muted"></span></div><a class="back-to-birthday" href="../index.html">← Back to Birthday Assistant</a></header>
 <section id="login" class="panel"><h1>Teacher access</h1><p class="muted">Choose your class and enter its shared access code.</p><label>Sunday School</label><select id="classId"><option value="AvaKerolos">Ava Kerolos</option><option value="Malayka">Malayka</option><option value="AbounaFaltaous">Abouna Faltaous</option></select><label>Class access code</label><input id="password" type="password" autocomplete="current-password"><button id="loginBtn">Sign in</button><p id="loginMsg" class="small muted"></p></section>
 <main id="app" class="hidden"><section class="panel"><b id="className"></b><button id="logout" class="secondary" style="float:right">Sign out</button><div class="tabs"><button data-tab="record">Attendance</button><button data-tab="roster">Roster</button><button data-tab="statistics">Statistics</button></div></section>
 <section id="record" class="panel"><div class="record-heading"><h2>Sunday attendance</h2><span class="small muted">Check the students who are present</span></div><div class="row"><div><label>Session date</label><input id="date" type="date"></div><button id="load">Load / create</button></div><p id="sessionMsg" class="small muted"></p><div id="summary" class="stats"></div><div id="bulk" class="hidden"><button id="allP" class="secondary">✓ Mark all present</button></div><div id="attendance"></div><div class="attendance-footer"><span id="completion" class="attendance-hint small">Unchecked students will be saved as absent when finalized.</span><button id="finalize" disabled>Finalize session</button></div></section>
 <section id="roster" class="panel hidden"><div class="page-heading"><div><span class="eyebrow">CLASS MANAGEMENT</span><h2>Student roster</h2><p class="small muted">Manage your class list. Inactive students are excluded from new sessions; their attendance records are retained.</p></div><span id="rosterCount" class="roster-count"></span></div><div class="add-student"><input id="newName" maxlength="100" placeholder="Enter student name"><button id="add">Add student</button></div><div id="rosterList" class="roster-list"></div></section>
-<section id="statistics" class="panel hidden"><div class="page-heading"><div><span class="eyebrow">CLASS OVERVIEW</span><h2>Statistics</h2><p class="small muted">Attendance performance across finalized Sunday School sessions.</p></div><button id="refresh" class="secondary">Refresh data</button></div><div id="historyStats" class="stats dashboard-stats"></div><div id="historyList" class="dashboard-content"></div></section>
+<section id="statistics" class="panel hidden">
+<div class="page-heading"><div><span class="eyebrow">CLASS OVERVIEW</span><h2>Statistics dashboard</h2><p class="small muted">A clear picture of attendance, progress and students who may need support.</p></div><button id="refresh" class="secondary">↻ Refresh data</button></div>
+<div id="historyStats" class="stats dashboard-stats"></div>
+<div id="dashboardInsights" class="dashboard-insights"></div>
+<div class="dashboard-grid">
+<section class="dashboard-card trend-card"><div class="dashboard-card-heading"><div><span class="eyebrow">OVER TIME</span><h3>Attendance trend</h3><p class="small muted">Attendance rate for each finalized session</p></div><span class="chart-key"><i class="key-present"></i> Attendance rate</span></div><div id="attendanceTrend" class="chart-area"></div></section>
+<section class="dashboard-card breakdown-card"><div class="dashboard-card-heading"><div><span class="eyebrow">SESSION COMPARISON</span><h3>Present vs absent</h3><p class="small muted">How each session compares</p></div></div><div id="attendanceBreakdown" class="breakdown-list"></div></section>
+</div>
+<section class="dashboard-card followup-card"><div class="dashboard-card-heading"><div><span class="eyebrow">TAKE ACTION</span><h3>Students requiring attention</h3><p class="small muted">Follow-up advisories based on consecutive absences</p></div><span id="followupCount" class="roster-count"></span></div><div id="followupList" class="followup-list"></div></section>
+<section class="dashboard-card sessions-card"><div class="dashboard-card-heading"><div><span class="eyebrow">ATTENDANCE RECORD</span><h3>Recent sessions</h3><p class="small muted">Finalized attendance by date</p></div></div><div id="historyList" class="session-list"></div></section>
+</section>
 <section id="studentStatistics" class="panel hidden"><div class="page-heading"><div><span class="eyebrow">INDIVIDUAL OVERVIEW</span><h2 id="studentStatisticsTitle">Student statistics</h2><p class="small muted">Attendance performance and session-by-session record.</p></div><button id="backToRoster" class="secondary" type="button">← Back to roster</button></div><div id="studentHistoryStats" class="stats dashboard-stats"></div><div id="studentHistoryList" class="dashboard-content"></div></section></main></div>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
@@ -108,7 +159,39 @@ async function mark(id,v){if(!session||session.status!=="draft")return;try{let r
 async function bulk(v){for(let s of active())await mark(s.id,v)}
 async function roster(){await loadStudents();let live=active().length; $("rosterCount").textContent=live+" active · "+(students.length-live)+" inactive";$("rosterList").innerHTML=students.map(s=>{let initials=String(s.StudentName||"?").trim().split(/\s+/).slice(0,2).map(x=>x[0]||"").join("").toUpperCase();return "<article class=\"roster-card\"><div class=\"roster-identity\"><span class=\"roster-avatar\">"+esc(initials)+"</span><div><div class=\"roster-name\">"+esc(s.StudentName)+"</div><div class=\"roster-status "+(s.active?"":"inactive")+"\">"+(s.active?"Active student":"Inactive student")+"</div></div></div><div class=\"roster-actions\"><button class=\"statistics-action\" data-student-statistics=\""+s.id+"\">Statistics</button><button class=\"secondary\" data-edit=\""+s.id+"\">Edit</button><button class=\""+(s.active?"danger-action":"secondary")+"\" data-toggle=\""+s.id+"\" data-active=\""+(!s.active)+"\">"+(s.active?"Deactivate":"Reactivate")+"</button></div></article>"}).join("");$("rosterList").querySelectorAll("[data-student-statistics]").forEach(b=>b.onclick=()=>studentStatistics(b.dataset.studentStatistics));$("rosterList").querySelectorAll("[data-edit]").forEach(b=>b.onclick=async()=>{let st=students.find(x=>x.id===b.dataset.edit),n=prompt("Student name",st.StudentName);if(n===null)return;n=n.trim();if(!n||n.length>100)return alert("Name must be 1–100 characters.");try{await updateDoc(doc(db,"classes",cls,"students",st.id),{StudentName:n,updatedAt:serverTimestamp(),updatedBy:uid});roster()}catch(e){alert(e.message)}});$("rosterList").querySelectorAll("[data-toggle]").forEach(b=>b.onclick=async()=>{try{await updateDoc(doc(db,"classes",cls,"students",b.dataset.toggle),{active:b.dataset.active==="true",updatedAt:serverTimestamp(),updatedBy:uid});roster()}catch(e){alert(e.message)}});}
 async function studentStatistics(studentId){let student=students.find(s=>s.id===studentId);if(!student)return;showPage("studentStatistics");$("studentStatisticsTitle").textContent=student.StudentName; $("studentHistoryStats").innerHTML="";$("studentHistoryList").textContent="Loading statistics…";try{let sessions=await getDocs(query(collection(db,"classes",cls,"sessions"),orderBy("sessionDate","desc"))),rows=[];for(let s of sessions.docs){if(s.data().status!=="final")continue;let rec=await getDoc(doc(db,"classes",cls,"sessions",s.id,"records",studentId));if(rec.exists()){let v=rec.data().attendanceStatus;if(["present","absent"].includes(v))rows.push({date:s.id,status:v});}}let p=rows.filter(x=>x.status==="present").length,a=rows.filter(x=>x.status==="absent").length,rate=p+a?Math.round(p/(p+a)*100):null,streak=0;for(let x of rows){if(x.status==="absent")streak++;else break;}$("studentHistoryStats").innerHTML=[["Sessions recorded",rows.length],["Present",p],["Absent",a],["Attendance rate",rate===null?"—":rate+"%"]].map(x=>"<div class=\"stat\"><span>"+x[0]+"</span><strong>"+x[1]+"</strong></div>").join("");let warning=streak>=3?"<div class=\"notice\">Follow-up advisory: "+streak+" consecutive absences.</div>":"";$("studentHistoryList").innerHTML=warning+(rows.length?rows.map(x=>"<div class=\"student\"><b>"+x.date+"</b><span>"+(x.status==="present"?"Present":"Absent")+"</span></div>").join(""):"<p class=\"muted\">No finalized attendance records for this student yet.</p>");}catch(e){$("studentHistoryList").textContent=e.code+": "+e.message;}}
-async function statistics(){try{let q=await getDocs(query(collection(db,"classes",cls,"sessions"),orderBy("sessionDate","desc"))),rows=[],hist=new Map();for(let s of q.docs){if(s.data().status!=="final")continue;let rs=await getDocs(rp(s.id)),p=0,a=0;rs.forEach(r=>{let v=r.data().attendanceStatus;if(v==="present")p++;if(v==="absent")a++;if(v==="present"||v==="absent"){let arr=hist.get(r.id)||[];arr.push(v);hist.set(r.id,arr)}});rows.push({date:s.id,p,a,rate:p+a?Math.round(p/(p+a)*100):null})}let p=rows.reduce((n,x)=>n+x.p,0),a=rows.reduce((n,x)=>n+x.a,0);$("historyStats").innerHTML=[["Sessions",rows.length],["Present",p],["Absent",a],["Rate",p+a?Math.round(p/(p+a)*100)+"%":"—"]].map(x=>"<div class=\"stat\"><span>"+x[0]+"</span><strong>"+x[1]+"</strong></div>").join("");let alerts=[];for(let s of students){let arr=hist.get(s.id)||[],n=0;for(let v of arr){if(v==="absent")n++;else break}if(n>=3)alerts.push(esc(s.StudentName)+" — "+n+" consecutive absences")}$("historyList").innerHTML=(alerts.length?"<div class=\"notice\">Follow-up advisory<br>"+alerts.join("<br>")+"</div>":"")+rows.map(x=>"<div class=\"student\"><b>"+x.date+"</b><span>"+x.p+" present · "+x.a+" absent · "+(x.rate===null?"—":x.rate+"%")+"</span></div>").join("")||"<p class=\"muted\">No finalized sessions yet.</p>"}catch(e){$("historyList").textContent=e.code+": "+e.message}}
+async function statistics(){
+try{
+let q=await getDocs(query(collection(db,"classes",cls,"sessions"),orderBy("sessionDate","desc"))),rows=[],hist=new Map();
+for(let snap of q.docs){
+if(snap.data().status!=="final")continue;
+let rs=await getDocs(rp(snap.id)),p=0,a=0;
+rs.forEach(r=>{let v=r.data().attendanceStatus;if(v==="present")p++;if(v==="absent")a++;if(v==="present"||v==="absent"){let arr=hist.get(r.id)||[];arr.push(v);hist.set(r.id,arr)}});
+rows.push({date:snap.id,p,a,total:p+a,rate:p+a?Math.round(p/(p+a)*100):null});
+}
+let p=rows.reduce((n,x)=>n+x.p,0),a=rows.reduce((n,x)=>n+x.a,0),total=p+a,rate=total?Math.round(p/total*100):null,avg=rows.length?Math.round(rows.reduce((n,x)=>n+x.total,0)/rows.length):0;
+$("historyStats").innerHTML=[["Sessions",rows.length,"Finalized sessions"],["Present",p,"Recorded present marks"],["Absent",a,"Recorded absent marks"],["Attendance rate",rate===null?"—":rate+"%","Across all recorded attendance"]].map(x=>"<div class=\"stat\"><span>"+x[0]+"</span><strong>"+x[1]+"</strong><small>"+x[2]+"</small></div>").join("");
+$("dashboardInsights").innerHTML="<div class=\"insight-tile\"><span>Average attendance per session</span><strong>"+avg+" students</strong></div><div class=\"insight-tile\"><span>Latest session rate</span><strong>"+(rows[0]&&rows[0].rate!==null?rows[0].rate+"%":"—")+"</strong></div>";
+let chronological=[...rows].reverse(),trend=chronological.slice(-10);
+if(trend.length){
+let W=640,H=220,L=38,R=14,T=16,B=34,plotW=W-L-R,plotH=H-T-B;
+let points=trend.map((x,i)=>({x:L+(trend.length===1?plotW/2:i*plotW/(trend.length-1)),y:T+plotH-(x.rate||0)*plotH/100,...x}));
+let path=points.map((pt,i)=>(i?"L":"M")+pt.x.toFixed(1)+" "+pt.y.toFixed(1)).join(" ");
+let area=path+" L "+points[points.length-1].x+" "+(T+plotH)+" L "+points[0].x+" "+(T+plotH)+" Z";
+let grid=[0,25,50,75,100].map(v=>{let y=T+plotH-v*plotH/100;return "<line class=\"chart-gridline\" x1=\""+L+"\" y1=\""+y+"\" x2=\""+(W-R)+"\" y2=\""+y+"\"/><text class=\"chart-axis-label\" x=\""+(L-8)+"\" y=\""+(y+4)+"\" text-anchor=\"end\">"+v+"%</text>"}).join("");
+let dots=points.map(pt=>"<circle class=\"chart-point\" cx=\""+pt.x+"\" cy=\""+pt.y+"\" r=\"5\"><title>"+pt.date+": "+(pt.rate===null?"No data":pt.rate+"%")+"</title></circle>").join("");
+let labels=points.map((pt,i)=>i===0||i===points.length-1||i===Math.floor(points.length/2)?"<text class=\"chart-axis-label\" x=\""+pt.x+"\" y=\""+(H-8)+"\" text-anchor=\"middle\">"+pt.date.slice(5)+"</text>":"").join("");
+$("attendanceTrend").innerHTML="<svg viewBox=\"0 0 "+W+" "+H+"\" role=\"img\" aria-label=\"Attendance rate trend\"><defs><linearGradient id=\"trendFill\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"#7165e8\" stop-opacity=\".24\"/><stop offset=\"100%\" stop-color=\"#7165e8\" stop-opacity=\".015\"/></linearGradient></defs>"+grid+"<path class=\"chart-area-fill\" d=\""+area+"\"/><path class=\"chart-line\" d=\""+path+"\"/>"+dots+labels+"</svg>";
+}else $("attendanceTrend").innerHTML="<div class=\"chart-empty\">Attendance trends will appear after the first session is finalized.</div>";
+let recent=rows.slice(0,5);
+$("attendanceBreakdown").innerHTML=(recent.length?recent.map(x=>"<div class=\"breakdown-item\"><div class=\"breakdown-meta\"><span>"+x.date+"</span><span>"+x.p+" present · "+x.a+" absent</span></div><div class=\"stacked-bar\"><span class=\"stacked-present\" style=\"width:"+(x.total?x.p/x.total*100:0)+"%\"></span><span class=\"stacked-absent\" style=\"width:"+(x.total?x.a/x.total*100:0)+"%\"></span></div></div>").join(""):"<div class=\"chart-empty\">No finalized sessions to compare yet.</div>")+"<div class=\"breakdown-legend\"><span><i style=\"background:#20ad80\"></i>Present</span><span><i style=\"background:#f18b83\"></i>Absent</span></div>";
+let alerts=[];
+for(let st of students){let arr=hist.get(st.id)||[],n=0;for(let v of arr){if(v==="absent")n++;else break}if(n>=3)alerts.push({id:st.id,name:st.StudentName,streak:n})}
+$("followupCount").textContent=alerts.length+" students";
+$("followupList").innerHTML=alerts.length?alerts.map(x=>"<div class=\"followup-item\"><div><strong>"+esc(x.name)+"</strong><small>"+x.streak+" consecutive absences</small></div><button class=\"secondary\" data-followup-student=\""+x.id+"\">View statistics</button></div>").join(""):"<div class=\"followup-empty\">✓ No students currently meet the consecutive-absence follow-up threshold.</div>";
+$("followupList").querySelectorAll("[data-followup-student]").forEach(b=>b.onclick=()=>studentStatistics(b.dataset.followupStudent));
+$("historyList").innerHTML=rows.length?rows.slice(0,8).map(x=>"<div class=\"session-row\"><strong>"+x.date+"</strong><span>"+x.p+" present · "+x.a+" absent · "+(x.rate===null?"—":x.rate+"%")+"</span></div>").join(""):"<div class=\"chart-empty\">No finalized sessions yet.</div>";
+}catch(e){$("historyList").textContent=e.code+": "+e.message;$("attendanceTrend").textContent="Unable to load dashboard data."}
+}
 async function activateClass(id,user){if(cls===id&&!$("app").classList.contains("hidden"))return;cls=id;uid=user.uid;$("login").classList.add("hidden");$("app").classList.remove("hidden");$("className").textContent=C[id].name;$("classCaption").textContent=C[id].name+" · Attendance";try{await loadStudents();say("sessionMsg",students.length+" students loaded.");let d=new Date();$("date").value=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);render()}catch(e){say("sessionMsg",e.code+": "+e.message,"error");}}
 onAuthStateChanged(auth,async user=>{if(!user)return;let entry=Object.entries(C).find(([id,x])=>x.uid===user.uid);if(!entry){await signOut(auth);say("loginMsg","This account is not authorized for an attendance class.","error");return;}await activateClass(entry[0],user);});
 $("loginBtn").onclick=async()=>{let id=$("classId").value;try{let u=await signInWithEmailAndPassword(auth,C[id].email,$("password").value);if(u.user.uid!==C[id].uid){await signOut(auth);throw Error("Wrong class account. Signed out for safety.");}}catch(e){say("loginMsg",e.code?e.code+": "+e.message:e.message,"error")}finally{$("password").value=""}};
