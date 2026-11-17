@@ -161,11 +161,12 @@ async function roster(){await loadStudents();let live=active().length; $("roster
 async function studentStatistics(studentId){let student=students.find(s=>s.id===studentId);if(!student)return;showPage("studentStatistics");$("studentStatisticsTitle").textContent=student.StudentName; $("studentHistoryStats").innerHTML="";$("studentHistoryList").textContent="Loading statistics…";try{let sessions=await getDocs(query(collection(db,"classes",cls,"sessions"),orderBy("sessionDate","desc"))),finalDocs=sessions.docs.filter(x=>x.data().status==="final"),recent=new Set(finalDocs.slice(0,2).map(x=>x.id)),isActive=student.active===true,rows=[];for(let s of finalDocs){let isRecent=recent.has(s.id);if(isRecent&&!isActive)continue;let rec=await getDoc(doc(db,"classes",cls,"sessions",s.id,"records",studentId));if(isRecent){let v=rec.exists()&&rec.data().attendanceStatus==="present"?"present":"absent";rows.push({date:s.id,status:v});}else if(rec.exists()){let v=rec.data().attendanceStatus;if(["present","absent"].includes(v))rows.push({date:s.id,status:v});}}let p=rows.filter(x=>x.status==="present").length,a=rows.filter(x=>x.status==="absent").length,rate=p+a?Math.round(p/(p+a)*100):null,streak=0;for(let x of rows){if(x.status==="absent")streak++;else break;}$("studentHistoryStats").innerHTML=[["Sessions recorded",rows.length],["Present",p],["Absent",a],["Attendance rate",rate===null?"—":rate+"%"]].map(x=>"<div class=\"stat\"><span>"+x[0]+"</span><strong>"+x[1]+"</strong></div>").join("");let warning=streak>=2?"<div class=\"notice\">Follow-up advisory: "+streak+" consecutive absences.</div>":"";$("studentHistoryList").innerHTML=warning+(rows.length?rows.map(x=>"<div class=\"student\"><b>"+x.date+"</b><span>"+(x.status==="present"?"Present":"Absent")+"</span></div>").join(""):"<p class=\"muted\">No finalized attendance records for this student yet.</p>");}catch(e){$("studentHistoryList").textContent=e.code+": "+e.message;}}
 async function statistics(){
 try{
-let q=await getDocs(query(collection(db,"classes",cls,"sessions"),orderBy("sessionDate","desc"))),rows=[],hist=new Map();
+let q=await getDocs(query(collection(db,"classes",cls,"sessions"),orderBy("sessionDate","desc"))),rows=[],sessionMarks=[];
 for(let snap of q.docs){
 if(snap.data().status!=="final")continue;
-let rs=await getDocs(rp(snap.id)),p=0,a=0;
-rs.forEach(r=>{let v=r.data().attendanceStatus;if(v==="present")p++;if(v==="absent")a++;if(v==="present"||v==="absent"){let arr=hist.get(r.id)||[];arr.push(v);hist.set(r.id,arr)}});
+let rs=await getDocs(rp(snap.id)),p=0,a=0,marksByStudent=new Map();
+rs.forEach(r=>{let v=r.data().attendanceStatus;if(v==="present")p++;if(v==="absent")a++;if(v==="present"||v==="absent")marksByStudent.set(r.id,v)});
+sessionMarks.push({date:snap.id,marks:marksByStudent});
 rows.push({date:snap.id,p,a,total:p+a,rate:p+a?Math.round(p/(p+a)*100):null});
 }
 let p=rows.reduce((n,x)=>n+x.p,0),a=rows.reduce((n,x)=>n+x.a,0),total=p+a,rate=total?Math.round(p/total*100):null,avg=rows.length?Math.round(rows.reduce((n,x)=>n+x.total,0)/rows.length):0;
@@ -184,12 +185,24 @@ $("attendanceTrend").innerHTML="<svg viewBox=\"0 0 "+W+" "+H+"\" role=\"img\" ar
 }else $("attendanceTrend").innerHTML="<div class=\"chart-empty\">Attendance trends will appear after the first session is finalized.</div>";
 let recent=rows.slice(0,5);
 $("attendanceBreakdown").innerHTML=(recent.length?recent.map(x=>"<div class=\"breakdown-item\"><div class=\"breakdown-meta\"><span>"+x.date+"</span><span>"+x.p+" present · "+x.a+" absent</span></div><div class=\"stacked-bar\"><span class=\"stacked-present\" style=\"width:"+(x.total?x.p/x.total*100:0)+"%\"></span><span class=\"stacked-absent\" style=\"width:"+(x.total?x.a/x.total*100:0)+"%\"></span></div></div>").join(""):"<div class=\"chart-empty\">No finalized sessions to compare yet.</div>")+"<div class=\"breakdown-legend\"><span><i style=\"background:#20ad80\"></i>Present</span><span><i style=\"background:#f18b83\"></i>Absent</span></div>";
-let alerts=[];
-for(let st of activeList){let arr=hist.get(st.id)||[],n=0;for(let v of arr){if(v==="absent")n++;else break}if(n>=2)alerts.push({id:st.id,name:st.StudentName,streak:n})}
+$("historyList").innerHTML=rows.length?rows.slice(0,8).map(x=>"<div class=\"session-row\"><strong>"+x.date+"</strong><span>"+x.p+" present · "+x.a+" absent · "+(x.rate===null?"—":x.rate+"%")+"</span></div>").join(""):"<div class=\"chart-empty\">No finalized sessions yet.</div>";
+try{
+const latestSessions=sessionMarks.slice(0,2),alerts=[];
+for(const st of active()){
+let streak=0;
+for(const sessionData of latestSessions){
+const status=sessionData.marks.get(st.id)||"absent";
+if(status==="absent")streak++;else break;
+}
+if(streak>=2)alerts.push({id:st.id,name:st.StudentName,streak});
+}
 $("followupCount").textContent=alerts.length+" students";
 $("followupList").innerHTML=alerts.length?alerts.map(x=>"<div class=\"followup-item\"><div><strong>"+esc(x.name)+"</strong><small>"+x.streak+" consecutive absences</small></div><button class=\"secondary\" data-followup-student=\""+x.id+"\">View statistics</button></div>").join(""):"<div class=\"followup-empty\">✓ No students currently meet the consecutive-absence follow-up threshold.</div>";
 $("followupList").querySelectorAll("[data-followup-student]").forEach(b=>b.onclick=()=>studentStatistics(b.dataset.followupStudent));
-$("historyList").innerHTML=rows.length?rows.slice(0,8).map(x=>"<div class=\"session-row\"><strong>"+x.date+"</strong><span>"+x.p+" present · "+x.a+" absent · "+(x.rate===null?"—":x.rate+"%")+"</span></div>").join(""):"<div class=\"chart-empty\">No finalized sessions yet.</div>";
+}catch(e){
+$("followupCount").textContent="Unavailable";
+$("followupList").innerHTML="<div class=\"notice error\">Unable to calculate student follow-up advisories. "+esc(e.message||String(e))+"</div>";
+}
 }catch(e){$("historyList").textContent=e.code+": "+e.message;$("attendanceTrend").textContent="Unable to load dashboard data."}
 }
 async function activateClass(id,user){if(cls===id&&!$("app").classList.contains("hidden"))return;cls=id;uid=user.uid;$("login").classList.add("hidden");$("app").classList.remove("hidden");$("className").textContent=C[id].name;$("classCaption").textContent=C[id].name+" · Attendance";try{await loadStudents();say("sessionMsg",students.length+" students loaded.");let d=new Date();$("date").value=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);render()}catch(e){say("sessionMsg",e.code+": "+e.message,"error");}}
